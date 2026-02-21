@@ -1,0 +1,156 @@
+{
+  "nav": {
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "privacy": "Datenschutz",
+    "help": "Hilfe",
+    "contact": "Kontakt",
+    "signIn": "Anmelden"
+  },
+  "hero": {
+    "headline1": "Verpassen Sie nie wieder",
+    "headline2Document": "ein Dokument",
+    "headline2Deadline": "eine Frist",
+    "subhead": "Scannen oder laden Sie Ihre Briefe hoch—Papierbox kategorisiert sie automatisch, findet Fälligkeitsdaten und erinnert Sie rechtzeitig. Ihre Daten bleiben privat.",
+    "ctaPrimary": "In 60 Sekunden organisiert (KOSTENLOS)",
+    "ctaDemo": "Demo ansehen",
+    "alwaysFree": "Immer kostenlos",
+    "noCard": "für Ihre ersten 10 Dokumente • Keine Kreditkarte erforderlich",
+    "trustStrip": {
+      "euHosted": "EU-gehostet",
+      "encrypted": "Ende-zu-Ende verschlüsselt",
+      "localOcr": "Lokale OCR",
+      "zeroKnowledge": "Zero-Knowledge"
+    },
+    "seeAiSample": "Sehen Sie, was wir an KI senden"
+  },
+  "features": {
+    "title": "So funktioniert es",
+    "subtitle": "Einfach, schnell und intelligente Dokumentenverwaltung",
+    "upload": {
+      "title": "Hochladen",
+      "description": "Ziehen Sie Ihre Dokumente oder Fotos per Drag & Drop. Wir unterstützen alle gängigen Dateiformate einschließlich PDFs, Bilder und gescannte Dokumente."
+    },
+    "aiAnalysis": {
+      "title": "KI-Analyse",
+      "description": "Unsere fortschrittliche KI liest und kategorisiert Ihre Dokumente automatisch und extrahiert wichtige Informationen, während sie Ihre Privatsphäre schützt."
+    },
+    "reminders": {
+      "title": "Intelligente Erinnerungen",
+      "description": "Verpassen Sie nie wichtige Termine. Wir extrahieren Fälligkeitsdaten und senden Ihnen rechtzeitige Benachrichtigungen für Verlängerungen und Fristen."
+    }
+  },
+  "pricing": {
+    "title": "Wählen Sie Ihren Plan",
+    "subtitle": "Starten Sie kostenlos und upgraden Sie, wenn Sie mehr Power benötigen. Alle Pläne beinhalten unsere Kern-Dokumentenverwaltungsfunktionen.",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "month": "Monat",
+    "year": "Jahr",
+    "save": "30% sparen",
+    "saveAmount": "€12.88 sparen",
+    "twoMonthsFree": "2 Monate GRATIS!",
+    "mostPopular": "BELIEBTESTE",
+    "haveCoupon": "Haben Sie einen Gutscheincode?",
+    "enterCoupon": "Gutscheincode eingeben",
+    "processing": "Verarbeitung...",
+    "moneyBack": "30 Tage Geld-zurück-Garantie",
+    "cancelAnytime": "Jederzeit kündbar",
+    "euServers": "EU-Server",
+    "free": {
+      "name": "Kostenlos",
+      "subtitle": "Perfekt für den Einstieg",
+      "features": [
+        "Bis zu 10 Dokumente (lebenslang)",
+        "Grundlegende Dokumentenspeicherung",
+        "Manuelle Kategorisierung",
+        "Standard-Support",
+        "Grundlegende Suchfunktionalität"
+      ],
+      "cta": "Kostenlos starten"
+    },
+    "pro": {
+      "name": "Pro",
+      "features": [
+        "Unbegrenzte Dokumente",
+        "KI-gestützte Auto-Kategorisierung",
+        "Intelligente Fälligkeitserinnerungen",
+        "Verschlüsselter Cloud-Tresor (EU-Server)",
+        "Erweiterte Suche & Filter",
+        "Prioritäts-Support",
+        "Dokumentenfreigabe & Zusammenarbeit",
+        "Mobile App-Zugang"
+      ],
+      "cta": "Auf Pro upgraden"
+    },
+    "guarantee": "Jederzeit kündbar • 30 Tage Geld-zurück-Garantie"
+  },
+  "upgrade": {
+    "limitReached": "Dokumentenlimit erreicht",
+    "documentsUsed": "Sie haben {{used}} von {{max}} kostenlosen Dokumenten verwendet",
+    "readyToPro": "Bereit für Pro?",
+    "description": "Sie haben die Macht von Papierbox erlebt! Schalten Sie jetzt unbegrenzten Dokumentenspeicher, KI-gestützte Organisation und Premium-Funktionen frei, um Ihre Produktivität zu steigern.",
+    "unlimitedStorage": "Unbegrenzter Speicher",
+    "neverWorryLimits": "Nie wieder Sorgen um Limits",
+    "aiOrganization": "KI-Organisation",
+    "smartCategorization": "Intelligente Kategorisierung & Erinnerungen",
+    "premiumSupport": "Premium-Support",
+    "priorityHelp": "Prioritätshilfe wenn Sie sie brauchen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen",
+    "documents": "Dokumente",
+    "amounts": "Beträge",
+    "upcoming": "Anstehend",
+    "searchPlaceholder": "Dokumente suchen...",
+    "upload": "Hochladen",
+    "signOut": "Abmelden",
+    "categories": {
+      "title": "Kategorien",
+      "all": "Alle Dokumente",
+      "realEstate": "Immobilien",
+      "banking": "Banking",
+      "tax": "Steuern",
+      "healthcare": "Gesundheit",
+      "legal": "Rechtliches",
+      "employment": "Arbeit",
+      "insurance": "Versicherung",
+      "education": "Bildung",
+      "utilities": "Versorgung",
+      "travel": "Reisen",
+      "other": "Sonstiges"
+    },
+    "plans": {
+      "free": "Kostenlos",
+      "proMonthly": "Pro Monatlich",
+      "proYearly": "Pro Jährlich"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "markAllRead": "Alle als gelesen",
+      "empty": "Noch keine Benachrichtigungen"
+    },
+    "documentsRemaining": "Dokumente übrig",
+    "documentsLeft": "verbleibend",
+    "unlimited": "unbegrenzt",
+    "upgradeToPro": "Auf Pro upgraden",
+    "allDocuments": "Alle Dokumente",
+    "documentsFound": "Dokumente gefunden",
+    "proUser": "Pro Nutzer",
+    "manageSubscription": "Abo verwalten",
+    "switchLanguage": "Sprache wechseln",
+    "filters": "Filter",
+    "upcomingDates": "Anstehende Termine",
+    "dueToday": "Heute fällig",
+    "dueTomorrow": "Morgen fällig",
+    "daysLeft": "Tage übrig",
+    "paymentSuccess": "Zahlung erfolgreich! Willkommen bei Pro!",
+    "paymentCanceled": "Zahlung abgebrochen. Sie können jederzeit upgraden!"
+  },
+  "footer": {
+    "description": "Intelligente Dokumentenverwaltung, die Ihre wichtigen Papiere organisiert und Sie nie eine Frist verpassen lässt.",
+    "product": "Produkt",
+    "support": "Support",
+    "legal": "Rechtliches"
+  }
+}

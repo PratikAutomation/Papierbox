@@ -1,0 +1,156 @@
+{
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "privacy": "Privacy",
+    "help": "Help",
+    "contact": "Contact",
+    "signIn": "Sign In"
+  },
+  "hero": {
+    "headline1": "Never miss a",
+    "headline2Document": "Document Again",
+    "headline2Deadline": "Deadline Again",
+    "subhead": "Scan or upload your letters—Papierbox auto-categorizes them, finds due dates, and reminds you on time. Your data stays private.",
+    "ctaPrimary": "Get Organized in 60 Seconds (FREE)",
+    "ctaDemo": "Watch demo",
+    "alwaysFree": "Always free",
+    "noCard": "for your first 10 documents • No credit card required",
+    "trustStrip": {
+      "euHosted": "EU-hosted",
+      "encrypted": "End-to-end encrypted",
+      "localOcr": "Local OCR",
+      "zeroKnowledge": "Zero-knowledge"
+    },
+    "seeAiSample": "See what we send to AI"
+  },
+  "features": {
+    "title": "How It Works",
+    "subtitle": "Simple, fast, and intelligent document management",
+    "upload": {
+      "title": "Upload",
+      "description": "Drag and drop your documents or photos. We support all major file formats including PDFs, images, and scanned documents."
+    },
+    "aiAnalysis": {
+      "title": "AI Analysis",
+      "description": "Our advanced AI reads and categorizes your documents automatically, extracting key information while protecting your privacy."
+    },
+    "reminders": {
+      "title": "Smart Reminders",
+      "description": "Never miss important dates. We extract due dates and send you timely notifications for renewals and deadlines."
+    }
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start free and upgrade when you need more power. All plans include our core document management features.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "month": "month",
+    "year": "year",
+    "save": "Save 30%",
+    "saveAmount": "Save €12.88",
+    "twoMonthsFree": "2 months FREE!",
+    "mostPopular": "MOST POPULAR",
+    "haveCoupon": "Have a coupon code?",
+    "enterCoupon": "Enter coupon code",
+    "processing": "Processing...",
+    "moneyBack": "30-day money-back guarantee",
+    "cancelAnytime": "Cancel anytime",
+    "euServers": "EU-based servers",
+    "free": {
+      "name": "Free",
+      "subtitle": "Perfect for getting started",
+      "features": [
+        "Up to 10 documents (lifetime)",
+        "Basic document storage",
+        "Manual categorization",
+        "Standard support",
+        "Basic search functionality"
+      ],
+      "cta": "Get Started Free"
+    },
+    "pro": {
+      "name": "Pro",
+      "features": [
+        "Unlimited documents",
+        "AI-powered auto-categorization",
+        "Smart due-date reminders",
+        "Encrypted cloud vault (EU servers)",
+        "Advanced search & filters",
+        "Priority support",
+        "Document sharing & collaboration",
+        "Mobile app access"
+      ],
+      "cta": "Upgrade to Pro"
+    },
+    "guarantee": "Cancel anytime • 30-day money-back guarantee"
+  },
+  "upgrade": {
+    "limitReached": "Document Limit Reached",
+    "documentsUsed": "You've used {{used}} of {{max}} free documents",
+    "readyToPro": "Ready to Go Pro?",
+    "description": "You've experienced the power of Papierbox! Now unlock unlimited document storage, AI-powered organization, and premium features to supercharge your productivity.",
+    "unlimitedStorage": "Unlimited Storage",
+    "neverWorryLimits": "Never worry about limits again",
+    "aiOrganization": "AI Organization",
+    "smartCategorization": "Smart categorization & reminders",
+    "premiumSupport": "Premium Support",
+    "priorityHelp": "Priority help when you need it"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "documents": "Documents",
+    "amounts": "Amounts",
+    "upcoming": "Upcoming",
+    "searchPlaceholder": "Search documents...",
+    "upload": "Upload",
+    "signOut": "Sign Out",
+    "categories": {
+      "title": "Categories",
+      "all": "All Documents",
+      "realEstate": "Real Estate",
+      "banking": "Banking",
+      "tax": "Tax",
+      "healthcare": "Healthcare",
+      "legal": "Legal",
+      "employment": "Employment",
+      "insurance": "Insurance",
+      "education": "Education",
+      "utilities": "Utilities",
+      "travel": "Travel",
+      "other": "Other"
+    },
+    "plans": {
+      "free": "Free Plan",
+      "proMonthly": "Pro Monthly",
+      "proYearly": "Pro Yearly"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "markAllRead": "Mark all read",
+      "empty": "No notifications yet"
+    },
+    "documentsRemaining": "docs left",
+    "documentsLeft": "remaining",
+    "unlimited": "unlimited",
+    "upgradeToPro": "Upgrade to Pro",
+    "allDocuments": "All Documents",
+    "documentsFound": "documents found",
+    "proUser": "Pro User",
+    "manageSubscription": "Manage Subscription",
+    "switchLanguage": "Switch Language",
+    "filters": "Filters",
+    "upcomingDates": "Upcoming Dates",
+    "dueToday": "Due Today",
+    "dueTomorrow": "Due Tomorrow",
+    "daysLeft": "days left",
+    "paymentSuccess": "Payment successful! Welcome to Pro!",
+    "paymentCanceled": "Payment canceled. You can upgrade anytime!"
+  },
+  "footer": {
+    "description": "Intelligent document management that keeps your important papers organized and never lets you miss a deadline.",
+    "product": "Product",
+    "support": "Support",
+    "legal": "Legal"
+  }
+}
