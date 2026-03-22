@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Supermarket price comparison for expats/students in Germany. Users search a product + city and get prices sorted cheapest-first across major German supermarkets.
 
+## Development Commands
+
+```bash
+npm run dev      # Start dev server at localhost:3000
+npm run build    # Production build
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
+
+No test framework is configured yet. Python scrapers (when added) live in `scrapers/` and run independently.
+
 ## Tech Stack
 
 - **Frontend/Backend**: Next.js 14 (App Router) + Tailwind CSS + shadcn/ui
@@ -24,6 +35,8 @@ src/components/    - React components (SearchBar, ResultCard, CitySelector)
 src/lib/           - Shared utilities (supabase client, types, search helpers)
 ```
 
+Path alias: `@/*` maps to `./src/*` (configured in tsconfig.json).
+
 ### Data Flow
 1. Python scrapers fetch weekly offers from supermarket public "Angebote" pages
 2. Scrapers normalize data and insert into Supabase `offers` table
@@ -32,6 +45,18 @@ src/lib/           - Shared utilities (supabase client, types, search helpers)
 
 ### Key API Endpoint
 - `GET /api/search?product=<query>&city=<slug>` — returns offers sorted by price ascending
+
+## Database
+
+Core table is `offers` with columns: store_id, product_name, product_name_en, product_name_normalized, price, original_price, unit, valid_from, valid_to, source_url. Uses PostgreSQL GIN index on search_vector for full-text search.
+
+Supporting tables: `stores` (6 supermarket chains), `cities`, `store_locations`.
+
+Full schema is in [PLAN.md](PLAN.md) under "Database Schema (MVP)".
+
+## Target Supermarkets (MVP)
+
+Lidl, Aldi Sud, Penny, Kaufland, Netto, Rewe. First five have national pricing (same everywhere). Rewe is regional.
 
 ## Data Pipeline Rules
 
@@ -42,16 +67,6 @@ src/lib/           - Shared utilities (supabase client, types, search helpers)
 - Always attribute source and link back to original offer page
 - Scrapers run on cron: once daily or when new Prospekte drop (Mon/Thu)
 
-## Database
-
-Core table is `offers` with columns: store_id, product_name, product_name_en, product_name_normalized, price, original_price, unit, valid_from, valid_to, source_url. Uses PostgreSQL GIN index on search_vector for full-text search.
-
-Supporting tables: `stores` (6 supermarket chains), `cities`, `store_locations`.
-
-## Target Supermarkets (MVP)
-
-Lidl, Aldi Sud, Penny, Kaufland, Netto, Rewe. First five have national pricing (same everywhere). Rewe is regional.
-
 ## Key Constraints
 
 - English-first UI with German toggle (target audience: expats/students)
@@ -59,3 +74,11 @@ Lidl, Aldi Sud, Penny, Kaufland, Netto, Rewe. First five have national pricing (
 - The entire product is ONE screen: search input + results. No navigation, no multi-page flows.
 - German legal requirements: must have Impressum and Datenschutz pages
 - No supermarket logos without permission — use text names + brand colors only
+
+## Design Tokens
+
+- Primary: #22C55E (green — savings/freshness)
+- Secondary: #1E293B (navy — trust/readability)
+- Accent: #FBBF24 (yellow — deals/attention)
+- Background: #FAFAFA
+- Font: Geist (loaded via next/font local fonts)
