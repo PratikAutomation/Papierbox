@@ -92,6 +92,10 @@ export const metadata: Metadata = {
     },
   },
   category: "shopping",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 // JSON-LD Structured Data

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface HeaderProps {
   lang: "en" | "de";
@@ -10,10 +11,16 @@ interface HeaderProps {
 export default function Header({ lang, setLang }: HeaderProps) {
   return (
     <header className="fixed top-0 w-full z-50 glass-header">
-      <nav className="flex justify-between items-center px-6 py-5 max-w-7xl mx-auto">
-        <Link href="/" className="text-3xl font-headline font-black tracking-tighter text-[#1a1c1c] flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <span className="bg-[#22c55e] text-white p-1 rounded-lg leading-none">P</span>
-          Papierbox
+      <nav className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Image
+            src="/logo.png"
+            alt="Papierbox"
+            width={140}
+            height={40}
+            className="h-10 w-auto"
+            priority
+          />
         </Link>
         <div className="flex items-center gap-6 font-headline font-bold text-sm">
           <div className="flex items-center gap-2 bg-white px-2 py-2 rounded-full border-2 border-[#1a1c1c] shadow-[2px_2px_0px_0px_#1a1c1c]">

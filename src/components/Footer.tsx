@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface FooterProps {
   lang: "en" | "de";
@@ -36,9 +37,7 @@ export default function Footer({ lang }: FooterProps) {
     <footer className="bg-white border-t-4 border-[#1a1c1c] py-20 mt-20 grainy-bg">
       <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-16">
         <div className="space-y-6">
-          <div className="text-4xl font-headline font-black tracking-tighter text-[#1a1c1c]">
-            Papierbox <span className="text-[#22c55e] text-5xl">.</span>
-          </div>
+          <Image src="/logo.png" alt="Papierbox" width={160} height={45} className="h-12 w-auto" />
           <p className="text-[#3d4a3d] text-lg font-bold leading-tight">
             {t.description}
           </p>
