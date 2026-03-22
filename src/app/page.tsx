@@ -44,6 +44,12 @@ const t: Record<Lang, Record<string, string>> = {
     typicalPricesBelow: "Typical prices below",
     noOffers: "No offers found for",
     trySearching: "Try searching for: Butter, Milk, Eggs, or Avocado",
+    alertTitle: "Never miss a deal again",
+    alertDesc: "We'll ping you when prices drop in",
+    alertPlaceholder: "your@email.com",
+    alertButton: "ALERT ME",
+    alertSent: "You're in! We'll keep you posted.",
+    alertPrivacy: "No spam. Unsubscribe anytime.",
     goatDeal: "GOAT Deal",
     bestValue: "Best Value",
     typicalPrice: "TYPICAL PRICE",
@@ -97,6 +103,12 @@ const t: Record<Lang, Record<string, string>> = {
     typicalPricesBelow: "Normalpreise unten",
     noOffers: "Keine Angebote gefunden für",
     trySearching: "Versuche: Butter, Milch, Eier oder Avocado",
+    alertTitle: "Nie wieder ein Angebot verpassen",
+    alertDesc: "Wir benachrichtigen dich bei Preisänderungen in",
+    alertPlaceholder: "deine@email.de",
+    alertButton: "BENACHRICHTIGE MICH",
+    alertSent: "Du bist dabei! Wir halten dich auf dem Laufenden.",
+    alertPrivacy: "Kein Spam. Jederzeit abmelden.",
     goatDeal: "TOP Angebot",
     bestValue: "Bester Preis",
     typicalPrice: "NORMALPREIS",
@@ -172,6 +184,8 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [alertEmail, setAlertEmail] = useState("");
+  const [alertSubmitted, setAlertSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -453,6 +467,66 @@ export default function Home() {
                     ))}
                   </div>
                 )}
+
+                {/* Price Alert Signup — appears after results */}
+                <div className="mt-10 bg-[#1a1c1c] text-white rounded-[2.5rem] p-8 md:p-10 border-4 border-[#1a1c1c] relative overflow-hidden">
+                  <div className="absolute top-4 right-6 text-5xl opacity-10 rotate-12 select-none">🔔</div>
+                  {alertSubmitted ? (
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl">✅</span>
+                      <div>
+                        <p className="font-headline font-black text-2xl">{l.alertSent}</p>
+                        <p className="text-white/60 font-medium text-sm mt-1">{l.alertPrivacy}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="material-symbols-outlined text-[#22c55e] text-3xl">notifications_active</span>
+                        <h3 className="font-headline font-black text-2xl md:text-3xl">
+                          {l.alertTitle}
+                        </h3>
+                      </div>
+                      <p className="text-white/70 font-bold mb-6">
+                        {l.alertDesc} <span className="text-[#22c55e] font-black">{getCityLabel(city)}</span>
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                          type="email"
+                          value={alertEmail}
+                          onChange={(e) => setAlertEmail(e.target.value)}
+                          placeholder={l.alertPlaceholder}
+                          className="flex-1 px-6 py-4 rounded-full bg-white/10 border-2 border-white/20 text-white font-bold placeholder:text-white/30 focus:border-[#22c55e] focus:ring-0 outline-none transition-all"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && alertEmail.includes("@")) {
+                              fetch("/api/subscribe", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ email: alertEmail, city, lang }),
+                              }).catch(() => {});
+                              setAlertSubmitted(true);
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            if (!alertEmail.includes("@")) return;
+                            fetch("/api/subscribe", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ email: alertEmail, city, lang }),
+                            }).catch(() => {});
+                            setAlertSubmitted(true);
+                          }}
+                          className="px-8 py-4 bg-[#22c55e] text-white font-headline font-black rounded-full border-2 border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all neo-button whitespace-nowrap"
+                        >
+                          {l.alertButton} 🔔
+                        </button>
+                      </div>
+                      <p className="text-white/30 text-xs font-medium mt-4">{l.alertPrivacy}</p>
+                    </>
+                  )}
+                </div>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 gap-6 bg-white border-4 border-outline rounded-[2.5rem] shadow-neo">
