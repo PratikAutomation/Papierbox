@@ -1,93 +1,79 @@
-# German Supermarket Scrapers
+# Universal Supermarket Scraper
 
-This directory contains web scrapers for fetching weekly grocery offers from German supermarkets.
+Production-ready scraper for German supermarket offers using Claude API for universal HTML parsing.
 
-## Setup
+## Quick Start
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Verify configuration:**
-   Check `config.py` for supermarket URLs and settings.
-
-## Usage
-
-### Run all scrapers:
 ```bash
-python run_all.py
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# 3. Run scraper
+python universal_scraper.py
+
+# Or scrape single store
+python universal_scraper.py --store lidl
 ```
 
-This will:
-- Scrape all configured supermarkets
-- Save combined results to `../data/offers.json`
-- Log progress and errors to console
+## How It Works
 
-### Run a single scraper (for testing):
-```bash
-python lidl_scraper.py
+```
+HTML Fetching → Claude API Extraction → Validation → Supabase Storage
 ```
 
-## Adding a New Supermarket
+1. **Fetch HTML** with browser-like headers
+2. **Extract offers** using Claude API (Haiku primary, Sonnet fallback)
+3. **Validate** prices, brands, categories
+4. **Deduplicate** by product name + price
+5. **Save** to Supabase (replace old offers)
 
-1. Create a new file `{supermarket}_scraper.py` (e.g., `aldi_scraper.py`)
-2. Import and inherit from `BaseScraper`
-3. Implement the `parse_offers(self, html)` method
-4. Add the scraper configuration to `config.py` in `SUPERMARKETS` list
-5. Import and add the scraper class to `run_all.py`
+## Configuration
 
-Example template:
-```python
-from base_scraper import BaseScraper
+Edit `config.py`:
 
-class AldiScraper(BaseScraper):
-    def parse_offers(self, html):
-        soup = BeautifulSoup(html, 'lxml')
-        offers = []
+- **Stores**: Add/modify `STORES` list with offer URLs
+- **Models**: `CLAUDE_MODEL` (Haiku) and `CLAUDE_FALLBACK_MODEL` (Sonnet)
+- **Validation**: `MIN_OFFERS_PER_STORE = 5`, `MAX_PRICE = 200`
+- **Rate Limits**: `RATE_LIMIT_SECONDS = 3`
 
-        # TODO: Implement parsing logic
-        # for item in soup.select('CSS_SELECTOR'):
-        #     offers.append({
-        #         'product_name': ...,
-        #         'price': ...,
-        #         'original_price': ...,
-        #         'unit': ...,
-        #         'valid_from': ...,
-        #         'valid_to': ...,
-        #         'store_slug': self.config['slug']
-        #     })
+## Environment Variables
 
-        return offers
+Create `.env` file:
+
+```env
+ANTHROPIC_API_KEY=sk-ant-api03-...
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=eyJ...
 ```
 
-## Rate Limiting
+## Supported Stores
 
-All scrapers respect a 3-second delay between requests to the same domain. This is configured in `config.py` and enforced by the `BaseScraper` class.
+- Lidl (2 URLs)
+- Aldi Süd
+- Penny
+- Kaufland
+- Netto
 
-## Robots.txt Compliance
+## Output
 
-Before scraping, each scraper checks the target site's `robots.txt` to ensure compliance with their crawling policies.
+Each offer includes:
+- Brand, product name (DE + EN), category (DE + EN)
+- Price, original price, unit
+- Valid from/to dates
+- Stored in `offers` table with `is_offer=true`
 
-## Error Handling
+## Error Recovery
 
-- Failed requests retry up to 3 times with exponential backoff
-- If one scraper fails, others continue running
-- All errors are logged with details
+- If < 5 offers extracted → keeps existing data
+- Logs all results to `scrape_logs` table
+- Automatic fallback to Sonnet if Haiku fails
 
-## Output Format
+## Cost
 
-Each offer contains:
-- `product_name` - Normalized product name
-- `price` - Current price (float)
-- `original_price` - Original price if discounted (float or null)
-- `unit` - Unit of measure (e.g., "kg", "piece", "l")
-- `valid_from` - Start date of offer (ISO format)
-- `valid_to` - End date of offer (ISO format)
-- `store_slug` - Store identifier (e.g., "lidl", "aldi-sued")
+~EUR 0.50/month (5 stores × 8 runs × EUR 0.01 per run)
 
-## Notes
-
-- CSS selectors must be updated after inspecting actual supermarket websites
-- Some sites may require JavaScript rendering (consider Selenium/Playwright if needed)
-- Always respect rate limits and terms of service
+See `/docs/superpowers/specs/2026-03-22-data-pipeline-design.md` for complete architecture.

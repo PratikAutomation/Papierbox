@@ -1,0 +1,56 @@
+name: Scrape Supermarket Offers
+
+on:
+  schedule:
+    # Monday and Thursday at 5:00 UTC (6:00 AM CET)
+    - cron: '0 5 * * 1,4'
+  workflow_dispatch:
+    inputs:
+      store:
+        description: 'Specific store to scrape (leave empty for all)'
+        required: false
+        type: string
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: scrapers/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scrapers/requirements.txt
+
+      - name: Scrape weekly offers
+        working-directory: scrapers
+        run: |
+          if [ -n "${{ github.event.inputs.store }}" ]; then
+            python universal_scraper.py --store "${{ github.event.inputs.store }}"
+          else
+            python universal_scraper.py
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Estimate regular prices
+        working-directory: scrapers
+        run: python estimate_regular_prices.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Summary
+        if: always()
+        run: echo "Scraping workflow completed at $(date -u)"
