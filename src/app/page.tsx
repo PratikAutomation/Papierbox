@@ -178,7 +178,7 @@ const CITIES = [
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
   const [query, setQuery] = useState("");
-  const [city, setCity] = useState("hamburg");
+  const [city, setCity] = useState("");
   const [result, setResult] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -341,7 +341,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => handleSearch()}
-                disabled={loading || !query.trim()}
+                disabled={loading || !query.trim() || !city}
                 className="md:w-auto bg-primary text-white font-headline font-black text-xl px-10 py-5 rounded-[2rem] border-2 border-outline shadow-neo-hover hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 neo-button disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {l.go}
