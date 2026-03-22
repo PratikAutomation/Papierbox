@@ -54,18 +54,17 @@ Return a JSON array where each object has:
 - price: number — typical regular price in EUR
 - unit: string — standard unit sold (e.g., "250g", "1L", "500g")
 
-Include 200 products covering these categories:
-- Dairy: milk, butter, cheese, yogurt, cream, mozzarella
-- Meat & Fish: chicken, ground beef, salmon, tuna
-- Produce: tomatoes, cucumbers, peppers, potatoes, onions, avocados, apples, bananas, oranges, lemons
-- Bakery: bread, toast, rolls
-- Pantry: pasta, rice, flour, sugar, oats, lentils, chickpeas, canned tomatoes
-- Oils & Condiments: olive oil, sunflower oil, ketchup, mustard, mayo, soy sauce
-- Beverages: water, juice, coffee, tea
-- Frozen: pizza, vegetables, fish sticks
-- Snacks: chocolate, chips, cookies, nutella
-- Household: detergent, dish soap, toilet paper, paper towels, toothpaste, shampoo
-- Baby & Kids: baby food, diapers (small selection)
+Include exactly 80 products covering these categories:
+- Dairy (10): milk, butter, cheese, yogurt, cream
+- Meat & Fish (8): chicken, ground beef, salmon, tuna
+- Produce (12): tomatoes, cucumbers, peppers, potatoes, onions, avocados, apples, bananas
+- Bakery (5): bread, toast, rolls
+- Pantry (12): pasta, rice, flour, sugar, oats, lentils, chickpeas
+- Oils & Condiments (8): olive oil, ketchup, mustard, mayo
+- Beverages (8): water, juice, coffee, tea
+- Frozen (5): pizza, vegetables, fish sticks
+- Snacks (5): chocolate, chips, nutella
+- Household (7): detergent, toilet paper, toothpaste, shampoo
 
 Use realistic 2026 German discount supermarket pricing.
 Include a mix of store brands (Eigenmarke) and name brands.
@@ -105,7 +104,7 @@ def estimate_prices() -> List[Dict[str, Any]]:
     try:
         response = client.messages.create(
             model=CLAUDE_MODEL,
-            max_tokens=32768,
+            max_tokens=8192,
             messages=[{"role": "user", "content": ESTIMATION_PROMPT}]
         )
 
