@@ -13,10 +13,9 @@ export default function Impressum() {
       subtitle: "Legal Disclosure as required by § 5 TMG",
       section1Title: "Company Information",
       section1Company: "Papierbox",
-      section1Address: "[Your address here]",
       section1Country: "Germany",
       section2Title: "Contact",
-      section2Email: "Email: hello@papierbox.eu",
+      section2Email: "Email: info@papierbox.eu",
       section2Web: "Web: papierbox.eu",
       section3Title: "Responsible for Content",
       section3Subtitle: "According to § 55 Abs. 2 RStV",
@@ -33,10 +32,9 @@ export default function Impressum() {
       subtitle: "Angaben gemäß § 5 TMG",
       section1Title: "Unternehmensangaben",
       section1Company: "Papierbox",
-      section1Address: "[Ihre Adresse hier]",
       section1Country: "Deutschland",
       section2Title: "Kontakt",
-      section2Email: "E-Mail: hello@papierbox.eu",
+      section2Email: "E-Mail: info@papierbox.eu",
       section2Web: "Web: papierbox.eu",
       section3Title: "Verantwortlich für den Inhalt",
       section3Subtitle: "Gemäß § 55 Abs. 2 RStV",
@@ -76,7 +74,6 @@ export default function Impressum() {
               </h2>
               <div className="font-body text-lg text-[#1a1c1c] space-y-2">
                 <p className="font-bold">{l.section1Company}</p>
-                <p>{l.section1Address}</p>
                 <p>{l.section1Country}</p>
               </div>
             </div>
@@ -89,8 +86,8 @@ export default function Impressum() {
               <div className="font-body text-lg text-[#1a1c1c] space-y-2">
                 <p>
                   <span className="font-bold">{l.section2Email.split(":")[0]}:</span>{" "}
-                  <a href="mailto:hello@papierbox.eu" className="text-[#22c55e] hover:underline font-semibold">
-                    hello@papierbox.eu
+                  <a href="mailto:info@papierbox.eu" className="text-[#22c55e] hover:underline font-semibold">
+                    info@papierbox.eu
                   </a>
                 </p>
                 <p>
