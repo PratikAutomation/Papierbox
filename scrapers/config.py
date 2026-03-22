@@ -24,7 +24,7 @@ RATE_LIMIT_SECONDS = 3  # Seconds between requests to the same domain
 REQUEST_TIMEOUT = 30    # Request timeout in seconds
 
 # Validation thresholds
-MIN_OFFERS_PER_STORE = 5  # Minimum offers required to replace existing data
+MIN_OFFERS_PER_STORE = 3  # Minimum offers required to replace existing data
 MAX_PRICE = 200           # Maximum valid price in EUR
 
 # User agent rotation
@@ -34,7 +34,10 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 ]
 
-# Store definitions
+# Minimum text content threshold - below this, page likely needs JS rendering
+MIN_TEXT_CONTENT = 200
+
+# Store definitions — multiple URLs per store to maximize coverage
 STORES = [
     {
         "id": "1",
@@ -43,6 +46,8 @@ STORES = [
         "brand_color": "#0050AA",
         "offers_urls": [
             "https://www.lidl.de/c/billiger-montag/a10006065",
+            "https://www.lidl.de/c/billiger-donnerstag/a10006066",
+            "https://www.lidl.de/angebote",
         ],
     },
     {
@@ -60,6 +65,7 @@ STORES = [
         "name": "Penny",
         "brand_color": "#CD1719",
         "offers_urls": [
+            "https://www.penny.de/angebote",
             "https://www.penny.de/angebote/aktuelle-angebote",
         ],
     },
@@ -70,6 +76,8 @@ STORES = [
         "brand_color": "#E10915",
         "offers_urls": [
             "https://www.kaufland.de/angebote/aktuelle-woche.html",
+            "https://filiale.kaufland.de/angebote/aktuelle-woche.html",
+            "https://www.kaufland.de/angebote/naechste-woche.html",
         ],
     },
     {
@@ -79,6 +87,7 @@ STORES = [
         "brand_color": "#FFE600",
         "offers_urls": [
             "https://www.netto-online.de/angebote",
+            "https://www.netto-online.de/category/angebote-der-woche",
         ],
     },
 ]

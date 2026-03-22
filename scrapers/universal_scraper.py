@@ -89,15 +89,64 @@ def extract_text_content(html: str) -> str:
     return text
 
 
+def extract_json_ld(html: str) -> str:
+    """Extract JSON-LD structured data from HTML (many stores embed product data this way)."""
+    soup = BeautifulSoup(html, "lxml")
+    json_ld_blocks = []
+    for script in soup.find_all("script", {"type": "application/ld+json"}):
+        try:
+            data = json.loads(script.string or "")
+            json_ld_blocks.append(json.dumps(data, ensure_ascii=False, indent=2))
+        except (json.JSONDecodeError, TypeError):
+            continue
+    return "\n".join(json_ld_blocks)
+
+
+def extract_inline_json(html: str) -> str:
+    """Extract product data from inline JavaScript (window.__INITIAL_STATE__, etc.)."""
+    import re
+    patterns = [
+        r'window\.__INITIAL_STATE__\s*=\s*(\{.+?\});',
+        r'window\.__NEXT_DATA__\s*=\s*(\{.+?\});',
+        r'"products"\s*:\s*(\[.+?\])',
+        r'"offers"\s*:\s*(\[.+?\])',
+        r'"items"\s*:\s*(\[.+?\])',
+    ]
+    results = []
+    for pattern in patterns:
+        matches = re.findall(pattern, html[:200000], re.DOTALL)
+        for match in matches:
+            if len(match) > 50:
+                results.append(match[:5000])
+    return "\n".join(results)
+
+
 def clean_html_for_extraction(html: str) -> str:
     """
-    Extract meaningful text content from HTML for Claude processing.
-    Sends clean text instead of raw HTML to reduce payload size and improve extraction.
+    Extract meaningful content from HTML for Claude processing.
+    Uses multiple strategies: JSON-LD, inline JS data, and cleaned text.
     """
+    parts = []
+
+    # Strategy 1: JSON-LD structured data (best quality)
+    json_ld = extract_json_ld(html)
+    if json_ld and len(json_ld) > 100:
+        parts.append(f"=== STRUCTURED DATA (JSON-LD) ===\n{json_ld[:8000]}")
+
+    # Strategy 2: Inline JavaScript product data
+    inline = extract_inline_json(html)
+    if inline and len(inline) > 100:
+        parts.append(f"=== EMBEDDED PRODUCT DATA ===\n{inline[:5000]}")
+
+    # Strategy 3: Clean text extraction (always include)
     soup = BeautifulSoup(html, "lxml")
 
-    # Remove non-content elements
-    for tag in soup(["script", "style", "noscript", "link", "meta", "svg", "path", "img"]):
+    # Remove non-content elements but KEEP scripts for now (already extracted above)
+    for tag in soup(["style", "noscript", "link", "meta", "svg", "path", "img"]):
+        tag.decompose()
+
+    # Now remove scripts too for text extraction
+    for tag in soup(["script"]):
         tag.decompose()
 
     # Try to find the main content area
@@ -105,15 +154,12 @@ def clean_html_for_extraction(html: str) -> str:
     if main:
         soup = main
 
-    # Get structured text preserving some HTML structure for context
-    # Keep price-related elements, product names, etc.
     lines = []
     for element in soup.find_all(["h1", "h2", "h3", "h4", "p", "span", "div", "li", "a", "td", "th"]):
         text = element.get_text(separator=" ", strip=True)
         if text and len(text) > 1 and len(text) < 500:
             lines.append(text)
 
-    # Deduplicate while preserving order
     seen = set()
     unique_lines = []
     for line in lines:
@@ -121,7 +167,12 @@ def clean_html_for_extraction(html: str) -> str:
             seen.add(line)
             unique_lines.append(line)
 
-    return "\n".join(unique_lines)
+    text_content = "\n".join(unique_lines)
+    if text_content:
+        parts.append(f"=== PAGE TEXT ===\n{text_content[:8000]}")
+
+    result = "\n\n".join(parts)
+    return result if result else text_content
 
 
 def extract_offers_with_claude(content: str, store_name: str, model: str = None, attempt: int = 1) -> list[dict]:
@@ -133,8 +184,8 @@ def extract_offers_with_claude(content: str, store_name: str, model: str = None,
     client = get_claude()
     use_model = model or CLAUDE_MODEL
 
-    # Truncate to ~15K chars (cleaned text is much smaller than raw HTML)
-    content_truncated = content[:15000]
+    # Truncate to ~20K chars to fit context with structured data
+    content_truncated = content[:20000]
 
     prompt = f"{EXTRACTION_PROMPT}\n\nStore: {store_name}\n\nPage content:\n{content_truncated}"
 
@@ -341,20 +392,15 @@ def scrape_store(store: dict) -> int:
             logger.info(f"  Fetching {url}...")
             html = fetch_html(url)
 
-            # Check if page has meaningful content
-            text_content = extract_text_content(html)
-            if len(text_content) < 500:
-                logger.warning(
-                    f"  Page has very little text content ({len(text_content)} chars). "
-                    "May need JavaScript rendering."
-                )
-                continue
+            logger.info(f"  Got {len(html)} chars HTML")
 
-            logger.info(f"  Got {len(html)} chars HTML, {len(text_content)} chars text")
-
-            # Clean HTML to extract meaningful content
+            # Clean HTML — extracts JSON-LD, inline JS data, and text
             cleaned = clean_html_for_extraction(html)
             logger.info(f"  Cleaned content: {len(cleaned)} chars")
+
+            if len(cleaned) < 200:
+                logger.warning(f"  Very little extractable content ({len(cleaned)} chars). Skipping.")
+                continue
 
             # Extract with Claude (try primary model first)
             try:
