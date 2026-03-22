@@ -16,7 +16,7 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 
 # Claude API Configuration
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
-CLAUDE_FALLBACK_MODEL = "claude-sonnet-4-5-20241022"
+CLAUDE_FALLBACK_MODEL = "claude-sonnet-4-5-20250929"
 MAX_TOKENS = 8192
 
 # Rate limiting settings
@@ -43,7 +43,6 @@ STORES = [
         "brand_color": "#0050AA",
         "offers_urls": [
             "https://www.lidl.de/c/billiger-montag/a10006065",
-            "https://www.lidl.de/c/lidl-sagt-danke/a10006493",
         ],
     },
     {

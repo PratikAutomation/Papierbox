@@ -89,32 +89,56 @@ def extract_text_content(html: str) -> str:
     return text
 
 
-def extract_offers_with_claude(html: str, store_name: str, model: str = None) -> list[dict]:
+def clean_html_for_extraction(html: str) -> str:
     """
-    Send HTML to Claude API and extract product offers.
+    Extract meaningful text content from HTML for Claude processing.
+    Sends clean text instead of raw HTML to reduce payload size and improve extraction.
+    """
+    soup = BeautifulSoup(html, "lxml")
 
-    Args:
-        html: Raw HTML from offers page
-        store_name: Name of the store (for context)
-        model: Claude model to use (defaults to config.CLAUDE_MODEL)
+    # Remove non-content elements
+    for tag in soup(["script", "style", "noscript", "link", "meta", "svg", "path", "img"]):
+        tag.decompose()
 
-    Returns:
-        List of extracted offer dictionaries
+    # Try to find the main content area
+    main = soup.find("main") or soup.find("div", {"role": "main"}) or soup.find("body")
+    if main:
+        soup = main
 
-    Raises:
-        anthropic.APIError: If Claude API request fails
-        json.JSONDecodeError: If Claude returns invalid JSON
-        ValueError: If response format is unexpected
+    # Get structured text preserving some HTML structure for context
+    # Keep price-related elements, product names, etc.
+    lines = []
+    for element in soup.find_all(["h1", "h2", "h3", "h4", "p", "span", "div", "li", "a", "td", "th"]):
+        text = element.get_text(separator=" ", strip=True)
+        if text and len(text) > 1 and len(text) < 500:
+            lines.append(text)
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_lines = []
+    for line in lines:
+        if line not in seen:
+            seen.add(line)
+            unique_lines.append(line)
+
+    return "\n".join(unique_lines)
+
+
+def extract_offers_with_claude(content: str, store_name: str, model: str = None, attempt: int = 1) -> list[dict]:
+    """
+    Send content to Claude API and extract product offers.
+    Uses cleaned text content instead of raw HTML for reliability.
+    Retries up to 3 times on connection errors.
     """
     client = get_claude()
     use_model = model or CLAUDE_MODEL
 
-    # Truncate HTML to ~50K chars to fit context window
-    html_truncated = html[:50000]
+    # Truncate to ~15K chars (cleaned text is much smaller than raw HTML)
+    content_truncated = content[:15000]
 
-    prompt = f"{EXTRACTION_PROMPT}\n\nStore: {store_name}\n\nHTML:\n{html_truncated}"
+    prompt = f"{EXTRACTION_PROMPT}\n\nStore: {store_name}\n\nPage content:\n{content_truncated}"
 
-    logger.info(f"  Sending {len(html_truncated)} chars to Claude ({use_model})...")
+    logger.info(f"  Sending {len(content_truncated)} chars to Claude ({use_model}), attempt {attempt}...")
 
     try:
         response = client.messages.create(
@@ -128,7 +152,6 @@ def extract_offers_with_claude(html: str, store_name: str, model: str = None) ->
         # Handle cases where Claude wraps JSON in markdown code blocks
         if response_text.startswith("```"):
             lines = response_text.split("\n")
-            # Remove first line (```json or ```) and last line (```)
             response_text = "\n".join(lines[1:-1])
 
         offers = json.loads(response_text)
@@ -137,6 +160,15 @@ def extract_offers_with_claude(html: str, store_name: str, model: str = None) ->
             raise ValueError(f"Expected list, got {type(offers)}")
 
         return offers
+
+    except (anthropic.APIConnectionError, ConnectionError) as e:
+        if attempt < 3:
+            wait = attempt * 3
+            logger.warning(f"  Connection error (attempt {attempt}/3), retrying in {wait}s...")
+            time.sleep(wait)
+            return extract_offers_with_claude(content, store_name, model, attempt + 1)
+        logger.error(f"  Claude extraction failed after 3 attempts: {e}")
+        raise
 
     except Exception as e:
         logger.error(f"  Claude extraction failed: {e}")
@@ -320,13 +352,17 @@ def scrape_store(store: dict) -> int:
 
             logger.info(f"  Got {len(html)} chars HTML, {len(text_content)} chars text")
 
+            # Clean HTML to extract meaningful content
+            cleaned = clean_html_for_extraction(html)
+            logger.info(f"  Cleaned content: {len(cleaned)} chars")
+
             # Extract with Claude (try primary model first)
             try:
-                offers = extract_offers_with_claude(html, store_name)
+                offers = extract_offers_with_claude(cleaned, store_name)
             except Exception as e:
                 logger.warning(f"  {CLAUDE_MODEL} extraction failed: {e}. Trying {CLAUDE_FALLBACK_MODEL}...")
                 try:
-                    offers = extract_offers_with_claude(html, store_name, model=CLAUDE_FALLBACK_MODEL)
+                    offers = extract_offers_with_claude(cleaned, store_name, model=CLAUDE_FALLBACK_MODEL)
                 except Exception as e2:
                     logger.error(f"  {CLAUDE_FALLBACK_MODEL} also failed: {e2}")
                     continue
