@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Map snake_case Supabase response to camelCase Offer type
-    const allResults: Offer[] = (rpcData || []).map((row: any) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allResults: Offer[] = (rpcData || []).map((row: Record<string, any>) => ({
       id: row.id,
       storeId: row.store_id,
       storeName: row.store_name,
@@ -88,7 +89,8 @@ export async function GET(request: NextRequest) {
         console.error('Fallback query error:', fallbackError);
       }
 
-      const fallbackOffers: Offer[] = (fallbackData || []).map((row: any) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fallbackOffers: Offer[] = (fallbackData || []).map((row: Record<string, any>) => ({
         id: row.id,
         storeId: row.store_id,
         storeName: row.stores.name,

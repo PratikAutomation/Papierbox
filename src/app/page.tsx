@@ -120,11 +120,6 @@ const t: Record<Lang, Record<string, string>> = {
   },
 };
 
-function pluralize(template: string, count: number): string {
-  const [singular, plural] = template.split("|");
-  return count === 1 ? singular : plural;
-}
-
 const DAYS_EN = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const DAYS_DE = ["SO", "MO", "DI", "MI", "DO", "FR", "SA"];
 
@@ -242,20 +237,6 @@ export default function Home() {
 
   function getCityLabel(slug: string) {
     return CITIES.find((c) => c.value === slug)?.label || slug;
-  }
-
-  function buildResultSummary() {
-    if (!result) return "";
-    const parts: string[] = [];
-    if (result.totalOffers > 0) {
-      parts.push(`${result.totalOffers} ${pluralize(l.offersFound, result.totalOffers)}`);
-    }
-    if (result.totalRegular > 0) {
-      if (parts.length > 0) parts.push("+");
-      parts.push(`${result.totalRegular} ${pluralize(l.typicalPricesFound, result.totalRegular)}`);
-    }
-    parts.push(result.totalOffers > 0 ? l.foundThisWeek : l.found);
-    return parts.join(" ");
   }
 
   return (

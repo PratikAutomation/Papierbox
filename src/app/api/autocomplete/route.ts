@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const allResults = [...(data1 || []), ...(data2 || [])];
     const uniqueNames = new Set<string>();
 
-    allResults.forEach((row: any) => {
+    allResults.forEach((row: Record<string, string>) => {
       if (row.product_name) {
         uniqueNames.add(row.product_name);
       }
