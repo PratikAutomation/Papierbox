@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Subscribe error:", error);
-      return NextResponse.json({ error: "Could not subscribe" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Could not subscribe", detail: error.message, hasKey: !!supabaseServiceKey },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true });
