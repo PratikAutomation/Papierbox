@@ -120,6 +120,11 @@ def estimate_prices() -> List[Dict[str, Any]]:
             # Remove first line (```json or ```) and last line (```)
             response_text = "\n".join(lines[1:-1]).strip()
 
+        # Fix common JSON issues from Claude (trailing commas)
+        import re
+        response_text = re.sub(r',\s*}', '}', response_text)
+        response_text = re.sub(r',\s*\]', ']', response_text)
+
         # Parse JSON
         products = json.loads(response_text)
 
@@ -295,11 +300,11 @@ def log_to_scrape_logs(status: str, count: int, error_message: Optional[str] = N
     try:
         sb = get_supabase_client()
         log_entry = {
-            "store_id": "estimation",  # Special store_id for estimation runs
-            "status": status,
+            "store_id": STORES[0]["id"],  # Use first store as log anchor
+            "status": f"estimation_{status}",
             "offers_count": count,
             "error_message": error_message,
-            "duration_ms": None,  # Could add timing if needed
+            "duration_ms": None,
         }
         sb.table("scrape_logs").insert(log_entry).execute()
         logger.debug("Logged estimation run to scrape_logs")
