@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -12,6 +12,12 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["400", "500", "600"],
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-headline-alt",
+  weight: ["700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${plusJakartaSans.variable} ${inter.variable} font-body bg-surface text-on-surface antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${bricolageGrotesque.variable} font-body grainy-bg text-[#1a1c1c] antialiased selection:bg-[#22c55e] selection:text-white`}
       >
         {children}
       </body>
