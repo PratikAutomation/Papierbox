@@ -105,7 +105,7 @@ def estimate_prices() -> List[Dict[str, Any]]:
     try:
         response = client.messages.create(
             model=CLAUDE_MODEL,
-            max_tokens=16384,
+            max_tokens=32768,
             messages=[{"role": "user", "content": ESTIMATION_PROMPT}]
         )
 
@@ -120,13 +120,44 @@ def estimate_prices() -> List[Dict[str, Any]]:
             # Remove first line (```json or ```) and last line (```)
             response_text = "\n".join(lines[1:-1]).strip()
 
-        # Fix common JSON issues from Claude (trailing commas)
+        # Robust JSON repair for common Claude output issues
         import re
+        # Remove trailing commas
         response_text = re.sub(r',\s*}', '}', response_text)
         response_text = re.sub(r',\s*\]', ']', response_text)
+        # Remove single-line comments
+        response_text = re.sub(r'//[^\n]*', '', response_text)
+        # Fix single quotes to double quotes (but not inside strings)
+        # Replace unescaped single quotes used as string delimiters
+        response_text = response_text.replace("'", '"')
+
+        # If JSON is truncated (hit max_tokens), try to close it
+        if not response_text.rstrip().endswith(']'):
+            logger.warning("JSON appears truncated, attempting to close array...")
+            # Find last complete object
+            last_brace = response_text.rfind('}')
+            if last_brace > 0:
+                response_text = response_text[:last_brace + 1] + ']'
 
         # Parse JSON
-        products = json.loads(response_text)
+        try:
+            products = json.loads(response_text)
+        except json.JSONDecodeError as first_err:
+            logger.warning(f"First parse attempt failed: {first_err}")
+            # Last resort: extract all complete JSON objects
+            pattern = r'\{[^{}]*\}'
+            matches = re.findall(pattern, response_text)
+            logger.info(f"Extracted {len(matches)} individual JSON objects")
+            products = []
+            for m in matches:
+                try:
+                    obj = json.loads(m)
+                    if isinstance(obj, dict) and 'product_name' in obj:
+                        products.append(obj)
+                except json.JSONDecodeError:
+                    continue
+            if not products:
+                raise first_err
 
         if not isinstance(products, list):
             raise ValueError("Expected JSON array, got: " + type(products).__name__)
