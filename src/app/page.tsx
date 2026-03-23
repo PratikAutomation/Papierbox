@@ -186,6 +186,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [alertEmail, setAlertEmail] = useState("");
   const [alertSubmitted, setAlertSubmitted] = useState(false);
+  const [missingField, setMissingField] = useState<"product" | "city" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -226,7 +227,19 @@ export default function Home() {
 
   async function handleSearch(searchQuery?: string) {
     const q = searchQuery || query;
-    if (!q.trim()) return;
+    setMissingField(null);
+
+    if (!q.trim()) {
+      setMissingField("product");
+      setTimeout(() => setMissingField(null), 2000);
+      return;
+    }
+    if (!city) {
+      setMissingField("city");
+      setTimeout(() => setMissingField(null), 2000);
+      return;
+    }
+
     setQuery(q);
     setLoading(true);
     setShowSuggestions(false);
@@ -290,8 +303,10 @@ export default function Home() {
                 </span>
                 <input
                   ref={inputRef}
-                  className="w-full pl-16 pr-6 py-5 bg-transparent border-none rounded-3xl focus:ring-0 text-xl font-bold placeholder:text-slate-300"
-                  placeholder={l.imLookingFor}
+                  className={`w-full pl-16 pr-6 py-5 bg-transparent border-none rounded-3xl focus:ring-0 text-xl font-bold placeholder:text-slate-300 transition-all ${
+                    missingField === "product" ? "ring-2 ring-red-400 bg-red-50/50 placeholder:text-red-400" : ""
+                  }`}
+                  placeholder={missingField === "product" ? (lang === "en" ? "Type a product first!" : "Erst ein Produkt eingeben!") : l.imLookingFor}
                   type="text"
                   value={query}
                   onChange={(e) => {
@@ -332,11 +347,13 @@ export default function Home() {
                   location_on
                 </span>
                 <select
-                  className="w-full pl-16 pr-6 py-5 bg-transparent border-none rounded-3xl focus:ring-0 text-xl font-bold appearance-none cursor-pointer"
+                  className={`w-full pl-16 pr-6 py-5 bg-transparent border-none rounded-3xl focus:ring-0 text-xl font-bold appearance-none cursor-pointer transition-all ${
+                    missingField === "city" ? "ring-2 ring-red-400 bg-red-50/50 text-red-500" : ""
+                  }`}
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  onChange={(e) => { setCity(e.target.value); setMissingField(null); }}
                 >
-                  <option value="">{l.whereYouAt}</option>
+                  <option value="">{missingField === "city" ? (lang === "en" ? "⚠ Pick a city first!" : "⚠ Erst eine Stadt wählen!") : l.whereYouAt}</option>
                   {CITIES.map((c) => (
                     <option key={c.value} value={c.value}>
                       {c.label}
@@ -346,7 +363,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => handleSearch()}
-                disabled={loading || !query.trim() || !city}
+                disabled={loading}
                 className="md:w-auto bg-primary text-white font-headline font-black text-xl px-10 py-5 rounded-[2rem] border-2 border-outline shadow-neo-hover hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 neo-button disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {l.go}
