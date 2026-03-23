@@ -25,7 +25,7 @@ from config import (
 
 # Try to import browser scraper (optional — only needed for JS-rendered stores)
 try:
-    from browser_scraper import fetch_rendered_html
+    from browser_scraper import fetch_rendered_html, scrape_lidl_browser, scrape_penny_browser, scrape_netto_browser
     HAS_PLAYWRIGHT = True
 except ImportError:
     HAS_PLAYWRIGHT = False
@@ -395,67 +395,103 @@ def scrape_store(store: dict) -> int:
     all_offers = []
     needs_browser = store.get("needs_browser", False)
 
-    for url in store["offers_urls"]:
-        try:
-            html = None
-
-            # Strategy 1: Use browser for JS-rendered stores
-            if needs_browser and HAS_PLAYWRIGHT:
-                logger.info(f"  [Browser] Fetching {url}...")
-                html = fetch_rendered_html(url, timeout_ms=45000)
-                if html:
-                    logger.info(f"  [Browser] Got {len(html)} chars rendered HTML")
-            elif needs_browser and not HAS_PLAYWRIGHT:
-                logger.warning(f"  Store needs browser but Playwright not installed. Trying HTTP...")
-
-            # Strategy 2: Simple HTTP (for non-JS stores or as fallback)
-            if not html:
-                logger.info(f"  [HTTP] Fetching {url}...")
-                try:
-                    html = fetch_html(url)
-                    logger.info(f"  [HTTP] Got {len(html)} chars HTML")
-                except requests.RequestException as e:
-                    logger.error(f"  [HTTP] Failed: {e}")
-                    continue
-
-            if not html or len(html) < 500:
-                logger.warning(f"  No usable HTML from {url}")
-                continue
-
-            # Clean HTML — extracts JSON-LD, inline JS data, and text
-            cleaned = clean_html_for_extraction(html)
-            logger.info(f"  Cleaned content: {len(cleaned)} chars")
-
-            if len(cleaned) < 200:
-                logger.warning(f"  Very little extractable content ({len(cleaned)} chars). Skipping.")
-                continue
-
-            # Extract with Claude (try primary model first)
+    # For stores with custom browser scrapers, use those first
+    if needs_browser and HAS_PLAYWRIGHT:
+        browser_scrapers = {
+            "lidl": scrape_lidl_browser,
+            "penny": scrape_penny_browser,
+            "netto": scrape_netto_browser,
+        }
+        custom_scraper = browser_scrapers.get(store_slug)
+        if custom_scraper:
+            logger.info(f"  Using custom browser scraper for {store_name}...")
             try:
-                offers = extract_offers_with_claude(cleaned, store_name)
+                html = custom_scraper()
+                if html and len(html) > 1000:
+                    cleaned = clean_html_for_extraction(html)
+                    logger.info(f"  Cleaned content: {len(cleaned)} chars")
+                    if len(cleaned) >= 200:
+                        try:
+                            offers = extract_offers_with_claude(cleaned, store_name)
+                        except Exception as e:
+                            logger.warning(f"  {CLAUDE_MODEL} failed: {e}. Trying {CLAUDE_FALLBACK_MODEL}...")
+                            try:
+                                offers = extract_offers_with_claude(cleaned, store_name, model=CLAUDE_FALLBACK_MODEL)
+                            except Exception as e2:
+                                logger.error(f"  {CLAUDE_FALLBACK_MODEL} also failed: {e2}")
+                                offers = []
+                        logger.info(f"  Claude extracted {len(offers)} raw offers")
+                        valid_offers = [o for o in offers if validate_offer(o)]
+                        logger.info(f"  {len(valid_offers)} passed validation (rejected {len(offers) - len(valid_offers)})")
+                        all_offers.extend(valid_offers)
+                else:
+                    logger.warning(f"  Custom browser scraper returned no usable HTML")
             except Exception as e:
-                logger.warning(f"  {CLAUDE_MODEL} extraction failed: {e}. Trying {CLAUDE_FALLBACK_MODEL}...")
-                try:
-                    offers = extract_offers_with_claude(cleaned, store_name, model=CLAUDE_FALLBACK_MODEL)
-                except Exception as e2:
-                    logger.error(f"  {CLAUDE_FALLBACK_MODEL} also failed: {e2}")
+                logger.error(f"  Custom browser scraper failed: {e}")
+
+    # For HTTP-based stores (or as fallback if browser didn't get enough)
+    if len(all_offers) < MIN_OFFERS_PER_STORE:
+        for url in store["offers_urls"]:
+            try:
+                html = None
+
+                # Strategy 1: Use generic browser for JS-rendered stores
+                if needs_browser and HAS_PLAYWRIGHT and len(all_offers) == 0:
+                    logger.info(f"  [Browser] Fetching {url}...")
+                    html = fetch_rendered_html(url, timeout_ms=45000)
+                    if html:
+                        logger.info(f"  [Browser] Got {len(html)} chars rendered HTML")
+                elif needs_browser and not HAS_PLAYWRIGHT:
+                    logger.warning(f"  Store needs browser but Playwright not installed. Trying HTTP...")
+
+                # Strategy 2: Simple HTTP (for non-JS stores or as fallback)
+                if not html:
+                    logger.info(f"  [HTTP] Fetching {url}...")
+                    try:
+                        html = fetch_html(url)
+                        logger.info(f"  [HTTP] Got {len(html)} chars HTML")
+                    except requests.RequestException as e:
+                        logger.error(f"  [HTTP] Failed: {e}")
+                        continue
+
+                if not html or len(html) < 500:
+                    logger.warning(f"  No usable HTML from {url}")
                     continue
 
-            logger.info(f"  Claude extracted {len(offers)} raw offers")
+                # Clean HTML — extracts JSON-LD, inline JS data, and text
+                cleaned = clean_html_for_extraction(html)
+                logger.info(f"  Cleaned content: {len(cleaned)} chars")
 
-            # Validate each offer
-            valid_offers = [o for o in offers if validate_offer(o)]
-            rejected = len(offers) - len(valid_offers)
-            logger.info(f"  {len(valid_offers)} offers passed validation (rejected {rejected})")
+                if len(cleaned) < 200:
+                    logger.warning(f"  Very little extractable content ({len(cleaned)} chars). Skipping.")
+                    continue
 
-            all_offers.extend(valid_offers)
+                # Extract with Claude (try primary model first)
+                try:
+                    offers = extract_offers_with_claude(cleaned, store_name)
+                except Exception as e:
+                    logger.warning(f"  {CLAUDE_MODEL} extraction failed: {e}. Trying {CLAUDE_FALLBACK_MODEL}...")
+                    try:
+                        offers = extract_offers_with_claude(cleaned, store_name, model=CLAUDE_FALLBACK_MODEL)
+                    except Exception as e2:
+                        logger.error(f"  {CLAUDE_FALLBACK_MODEL} also failed: {e2}")
+                        continue
 
-            # Rate limit between URLs
-            time.sleep(RATE_LIMIT_SECONDS)
+                logger.info(f"  Claude extracted {len(offers)} raw offers")
 
-        except Exception as e:
-            logger.error(f"  Unexpected error processing {url}: {e}")
-            continue
+                # Validate each offer
+                valid_offers = [o for o in offers if validate_offer(o)]
+                rejected = len(offers) - len(valid_offers)
+                logger.info(f"  {len(valid_offers)} offers passed validation (rejected {rejected})")
+
+                all_offers.extend(valid_offers)
+
+                # Rate limit between URLs
+                time.sleep(RATE_LIMIT_SECONDS)
+
+            except Exception as e:
+                logger.error(f"  Unexpected error processing {url}: {e}")
+                continue
 
     duration_ms = int((time.time() - start_time) * 1000)
 
