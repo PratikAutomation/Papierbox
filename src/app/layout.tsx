@@ -21,7 +21,7 @@ const bricolageGrotesque = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://papierbox.eu"),
+  metadataBase: new URL("https://www.papierbox.eu"),
   title: {
     default: "Papierbox — Find the Cheapest Groceries in Germany",
     template: "%s | Papierbox",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     alternateLocale: "de_DE",
-    url: "https://papierbox.eu",
+    url: "https://www.papierbox.eu",
     siteName: "Papierbox",
     title: "Papierbox — Stop Overpaying for Groceries in Germany",
     description:
@@ -85,10 +85,10 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   alternates: {
-    canonical: "https://papierbox.eu",
+    canonical: "https://www.papierbox.eu",
     languages: {
-      "en": "https://papierbox.eu",
-      "de": "https://papierbox.eu",
+      "en": "https://www.papierbox.eu",
+      "de": "https://www.papierbox.eu",
     },
   },
   category: "shopping",
@@ -103,7 +103,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "Papierbox",
-  url: "https://papierbox.eu",
+  url: "https://www.papierbox.eu",
   description:
     "Compare grocery prices across German supermarkets. Find the cheapest deals from Lidl, Aldi, Penny, Kaufland and Netto.",
   applicationCategory: "ShoppingApplication",
