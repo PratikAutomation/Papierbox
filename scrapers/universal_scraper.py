@@ -30,6 +30,13 @@ try:
 except ImportError:
     HAS_PLAYWRIGHT = False
 
+# Try to import Firecrawl scraper (best for Penny, Lidl Vision)
+try:
+    from firecrawl_scraper import scrape_penny_firecrawl, scrape_lidl_vision, scrape_netto_firecrawl
+    HAS_FIRECRAWL = True
+except ImportError:
+    HAS_FIRECRAWL = False
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -395,8 +402,26 @@ def scrape_store(store: dict) -> int:
     all_offers = []
     needs_browser = store.get("needs_browser", False)
 
-    # For stores with custom browser scrapers, use those first
-    if needs_browser and HAS_PLAYWRIGHT:
+    # STRATEGY 0: Try Firecrawl first (best for JS-rendered stores)
+    if needs_browser and HAS_FIRECRAWL:
+        firecrawl_scrapers = {
+            "penny": scrape_penny_firecrawl,
+            "lidl": scrape_lidl_vision,
+            "netto": scrape_netto_firecrawl,
+        }
+        fc_scraper = firecrawl_scrapers.get(store_slug)
+        if fc_scraper:
+            logger.info(f"  [Firecrawl] Trying Firecrawl/Vision scraper for {store_name}...")
+            try:
+                fc_offers = fc_scraper()
+                valid_fc = [o for o in fc_offers if validate_offer(o)]
+                logger.info(f"  [Firecrawl] Got {len(valid_fc)} valid offers")
+                all_offers.extend(valid_fc)
+            except Exception as e:
+                logger.warning(f"  [Firecrawl] Failed: {e}")
+
+    # STRATEGY 1: Playwright browser scrapers (fallback for JS stores)
+    if len(all_offers) < MIN_OFFERS_PER_STORE and needs_browser and HAS_PLAYWRIGHT:
         browser_scrapers = {
             "lidl": scrape_lidl_browser,
             "penny": scrape_penny_browser,
