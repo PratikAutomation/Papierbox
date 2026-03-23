@@ -44,9 +44,8 @@ STORES = [
         "slug": "lidl",
         "name": "Lidl",
         "brand_color": "#0050AA",
+        "needs_browser": True,
         "offers_urls": [
-            "https://www.lidl.de/c/billiger-montag/a10006065",
-            "https://www.lidl.de/c/billiger-donnerstag/a10006066",
             "https://www.lidl.de/angebote",
         ],
     },
@@ -55,6 +54,7 @@ STORES = [
         "slug": "aldi-sued",
         "name": "Aldi Süd",
         "brand_color": "#00005F",
+        "needs_browser": False,
         "offers_urls": [
             "https://www.aldi-sued.de/de/angebote.html",
         ],
@@ -64,9 +64,9 @@ STORES = [
         "slug": "penny",
         "name": "Penny",
         "brand_color": "#CD1719",
+        "needs_browser": True,
         "offers_urls": [
             "https://www.penny.de/angebote",
-            "https://www.penny.de/angebote/aktuelle-angebote",
         ],
     },
     {
@@ -74,10 +74,10 @@ STORES = [
         "slug": "kaufland",
         "name": "Kaufland",
         "brand_color": "#E10915",
+        "needs_browser": False,
         "offers_urls": [
             "https://www.kaufland.de/angebote/aktuelle-woche.html",
             "https://filiale.kaufland.de/angebote/aktuelle-woche.html",
-            "https://www.kaufland.de/angebote/naechste-woche.html",
         ],
     },
     {
@@ -85,9 +85,9 @@ STORES = [
         "slug": "netto",
         "name": "Netto",
         "brand_color": "#FFE600",
+        "needs_browser": True,
         "offers_urls": [
             "https://www.netto-online.de/angebote",
-            "https://www.netto-online.de/category/angebote-der-woche",
         ],
     },
 ]

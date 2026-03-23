@@ -23,6 +23,13 @@ from config import (
     USER_AGENTS, STORES, EXTRACTION_PROMPT, REQUEST_TIMEOUT
 )
 
+# Try to import browser scraper (optional — only needed for JS-rendered stores)
+try:
+    from browser_scraper import fetch_rendered_html
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -386,13 +393,34 @@ def scrape_store(store: dict) -> int:
 
     start_time = time.time()
     all_offers = []
+    needs_browser = store.get("needs_browser", False)
 
     for url in store["offers_urls"]:
         try:
-            logger.info(f"  Fetching {url}...")
-            html = fetch_html(url)
+            html = None
 
-            logger.info(f"  Got {len(html)} chars HTML")
+            # Strategy 1: Use browser for JS-rendered stores
+            if needs_browser and HAS_PLAYWRIGHT:
+                logger.info(f"  [Browser] Fetching {url}...")
+                html = fetch_rendered_html(url, timeout_ms=45000)
+                if html:
+                    logger.info(f"  [Browser] Got {len(html)} chars rendered HTML")
+            elif needs_browser and not HAS_PLAYWRIGHT:
+                logger.warning(f"  Store needs browser but Playwright not installed. Trying HTTP...")
+
+            # Strategy 2: Simple HTTP (for non-JS stores or as fallback)
+            if not html:
+                logger.info(f"  [HTTP] Fetching {url}...")
+                try:
+                    html = fetch_html(url)
+                    logger.info(f"  [HTTP] Got {len(html)} chars HTML")
+                except requests.RequestException as e:
+                    logger.error(f"  [HTTP] Failed: {e}")
+                    continue
+
+            if not html or len(html) < 500:
+                logger.warning(f"  No usable HTML from {url}")
+                continue
 
             # Clean HTML — extracts JSON-LD, inline JS data, and text
             cleaned = clean_html_for_extraction(html)
@@ -425,9 +453,6 @@ def scrape_store(store: dict) -> int:
             # Rate limit between URLs
             time.sleep(RATE_LIMIT_SECONDS)
 
-        except requests.RequestException as e:
-            logger.error(f"  Failed to fetch {url}: {e}")
-            continue
         except Exception as e:
             logger.error(f"  Unexpected error processing {url}: {e}")
             continue
