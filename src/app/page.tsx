@@ -188,6 +188,7 @@ export default function Home() {
   const [alertSubmitted, setAlertSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const l = t[lang];
 
@@ -236,6 +237,10 @@ export default function Home() {
       );
       const data = await res.json();
       setResult(data.data);
+      // Auto-scroll to results on mobile
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     } catch {
       setResult(null);
     } finally {
@@ -382,7 +387,7 @@ export default function Home() {
 
         {/* Results Section */}
         {hasSearched && (
-          <section className="max-w-5xl mx-auto px-6">
+          <section ref={resultsRef} className="max-w-5xl mx-auto px-6 scroll-mt-24">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <span className="material-symbols-outlined text-5xl text-primary animate-spin">
