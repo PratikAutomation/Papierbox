@@ -10,20 +10,19 @@ interface HeaderProps {
 
 export default function Header({ lang, setLang }: HeaderProps) {
   return (
-    <header className="fixed top-0 w-full z-50 glass-header">
-      <nav className="flex justify-between items-center px-4 sm:px-6 py-2 sm:py-3 max-w-7xl mx-auto">
+    <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b-2 border-[#1a1c1c]/10">
+      <nav className="flex justify-between items-center px-4 sm:px-6 py-1.5 max-w-7xl mx-auto">
         <Link href="/" className="flex flex-col items-center hover:opacity-80 transition-opacity shrink-0">
           <Image
             src="/logo.png"
             alt="Papierbox"
-            width={64}
-            height={64}
-            className="h-10 sm:h-14 w-auto -mb-1"
-            style={{ margin: "-10px", marginBottom: "-2px" }}
+            width={80}
+            height={80}
+            className="h-10 sm:h-12 w-auto"
             priority
           />
-          <span className="text-[#22c55e] font-headline font-black text-[8px] sm:text-[10px] tracking-[0.25em] uppercase">
-            Papierbox
+          <span className="text-[#1a1c1c] font-headline font-black text-[11px] sm:text-sm tracking-[0.15em] uppercase leading-none -mt-0.5">
+            PAPIERBOX
           </span>
         </Link>
         <div className="flex items-center font-headline font-bold text-sm">
