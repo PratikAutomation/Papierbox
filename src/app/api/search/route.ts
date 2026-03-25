@@ -208,8 +208,8 @@ export async function GET(request: NextRequest) {
       .slice(0, 30)
       .map(s => s.offer);
 
-    let offers = relevant.filter(item => item.isOffer);
-    let regularPrices = relevant.filter(item => !item.isOffer);
+    const offers = relevant.filter(item => item.isOffer);
+    const regularPrices = relevant.filter(item => !item.isOffer);
 
     // STEP 3: If poor results, ask Claude for estimates (SMART FALLBACK)
     let aiAssisted = false;
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
       const aiEstimates = await claudeEstimate(product);
 
       if (aiEstimates.length > 0) {
-        regularPrices = [...regularPrices, ...aiEstimates];
+        aiEstimates.forEach(e => regularPrices.push(e));
         aiAssisted = true;
         console.log(`[AI Fallback] Claude provided ${aiEstimates.length} estimated prices`);
       }
