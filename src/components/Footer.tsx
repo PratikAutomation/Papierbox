@@ -38,8 +38,8 @@ export default function Footer({ lang }: FooterProps) {
       <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-16">
         <div className="space-y-6">
           <div className="flex flex-col items-start">
-            <Image src="/logo.png" alt="Papierbox" width={72} height={72} className="h-16 w-auto" />
-            <span className="text-[#22c55e] font-headline font-black text-sm tracking-[0.25em] uppercase mt-1">
+            <Image src="/logo.png" alt="Papierbox" width={72} height={72} className="h-16 w-auto" style={{ margin: "-10px", marginBottom: "-2px" }} />
+            <span className="text-[#22c55e] font-headline font-black text-sm tracking-[0.25em] uppercase">
               Papierbox
             </span>
           </div>
