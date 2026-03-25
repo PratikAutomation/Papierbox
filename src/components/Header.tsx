@@ -16,11 +16,14 @@ export default function Header({ lang, setLang }: HeaderProps) {
           <Image
             src="/logo.png"
             alt="Papierbox"
-            width={140}
-            height={40}
-            className="h-10 w-auto"
+            width={48}
+            height={48}
+            className="h-12 w-auto"
             priority
           />
+          <span className="text-[#1a1c1c] font-headline font-black text-xl tracking-tight uppercase">
+            Papierbox
+          </span>
         </Link>
         <div className="flex items-center gap-6 font-headline font-bold text-sm">
           <div className="flex items-center gap-2 bg-white px-2 py-2 rounded-full border-2 border-[#1a1c1c] shadow-[2px_2px_0px_0px_#1a1c1c]">

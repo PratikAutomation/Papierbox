@@ -93,7 +93,10 @@ export const metadata: Metadata = {
   },
   category: "shopping",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/logo.png", type: "image/png", sizes: "192x192" },
+    ],
     apple: "/logo.png",
   },
 };
