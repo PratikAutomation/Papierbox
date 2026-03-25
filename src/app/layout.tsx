@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter, Bricolage_Grotesque } from "next/font/google";
+import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -150,6 +151,7 @@ export default function RootLayout({
         className={`${plusJakartaSans.variable} ${inter.variable} ${bricolageGrotesque.variable} font-body grainy-bg text-[#1a1c1c] antialiased selection:bg-[#22c55e] selection:text-white`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
