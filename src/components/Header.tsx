@@ -11,17 +11,17 @@ interface HeaderProps {
 export default function Header({ lang, setLang }: HeaderProps) {
   return (
     <header className="fixed top-0 w-full z-50 glass-header">
-      <nav className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+      <nav className="flex justify-between items-center px-6 py-3 max-w-7xl mx-auto">
+        <Link href="/" className="flex flex-col items-center hover:opacity-80 transition-opacity">
           <Image
             src="/logo.png"
             alt="Papierbox"
-            width={48}
-            height={48}
-            className="h-12 w-auto"
+            width={64}
+            height={64}
+            className="h-14 w-auto"
             priority
           />
-          <span className="text-[#1a1c1c] font-headline font-black text-xl tracking-tight uppercase">
+          <span className="text-[#22c55e] font-headline font-black text-[10px] tracking-[0.25em] uppercase">
             Papierbox
           </span>
         </Link>

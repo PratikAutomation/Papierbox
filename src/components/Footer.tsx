@@ -37,9 +37,9 @@ export default function Footer({ lang }: FooterProps) {
     <footer className="bg-white border-t-4 border-[#1a1c1c] py-20 mt-20 grainy-bg">
       <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-16">
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Papierbox" width={56} height={56} className="h-14 w-auto" />
-            <span className="text-[#1a1c1c] font-headline font-black text-2xl tracking-tight uppercase">
+          <div className="flex flex-col items-start">
+            <Image src="/logo.png" alt="Papierbox" width={72} height={72} className="h-16 w-auto" />
+            <span className="text-[#22c55e] font-headline font-black text-sm tracking-[0.25em] uppercase mt-1">
               Papierbox
             </span>
           </div>
