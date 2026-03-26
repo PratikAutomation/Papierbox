@@ -18,7 +18,7 @@ export default function Header({ lang, setLang }: HeaderProps) {
             alt="Papierbox"
             width={524}
             height={476}
-            className="h-10 sm:h-14 w-auto"
+            className="h-14 sm:h-20 lg:h-24 w-auto"
             priority
           />
         </Link>
