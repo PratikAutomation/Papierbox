@@ -4,6 +4,8 @@ import { Offer, SearchResult } from '@/lib/types';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const MIN_RELEVANT_RESULTS = 2;
+const MAX_OFFERS_SHOWN = 8;
+const MAX_REGULAR_SHOWN = 3;
 
 function sanitizeInput(input: string): string {
   return input.trim().slice(0, 100).replace(/<[^>]*>/g, '');
@@ -15,38 +17,83 @@ function normalize(s: string): string {
     .replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e');
 }
 
+/**
+ * Check if a word matches as a WHOLE WORD in text (not as substring).
+ * "milk" matches "Milk", "Fresh Milk 1L" but NOT "Milka"
+ */
+function wordMatch(word: string, text: string): boolean {
+  const regex = new RegExp(`(?:^|[\\s,./\\-_()"])${word}(?:[\\s,./\\-_()"]|$)`, 'i');
+  return regex.test(text) || regex.test(normalize(text));
+}
+
+/**
+ * Check if a word matches anywhere as substring (looser matching).
+ */
+function substringMatch(word: string, text: string): boolean {
+  return text.toLowerCase().includes(word) || normalize(text.toLowerCase()).includes(normalize(word));
+}
+
 function calculateRelevance(query: string, offer: Offer): number {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length >= 2);
 
-  const productText = [
-    offer.productName, offer.productNameEn, offer.brand, offer.category, offer.categoryEn,
-  ].join(' ').toLowerCase();
+  const productName = offer.productName || '';
+  const productNameEn = offer.productNameEn || '';
+  const brand = offer.brand || '';
+  const category = offer.category || '';
+  const categoryEn = offer.categoryEn || '';
 
-  const normalizedProduct = normalize(productText);
-  const normalizedQuery = normalize(queryLower);
+  const allText = [productName, productNameEn, brand, category, categoryEn].join(' ');
 
   let score = 0;
-  let matchedWords = 0;
+  let wholeWordMatches = 0;
+  let substringMatches = 0;
 
   for (const word of queryWords) {
     const nWord = normalize(word);
-    if (productText.includes(word) || normalizedProduct.includes(nWord)) {
-      matchedWords++;
-      if (offer.productName.toLowerCase().includes(word) || normalize(offer.productName.toLowerCase()).includes(nWord)) score += 30;
-      if (offer.brand.toLowerCase().includes(word) || normalize(offer.brand.toLowerCase()).includes(nWord)) score += 25;
-      if ((offer.category || '').toLowerCase().includes(word) || (offer.categoryEn || '').toLowerCase().includes(word)) score += 20;
-      score += 10;
+    const isWholeWord = wordMatch(word, allText) || wordMatch(nWord, allText);
+    const isSubstring = substringMatch(word, allText.toLowerCase());
+
+    if (isWholeWord) {
+      wholeWordMatches++;
+
+      // Whole word match in product name — highest value
+      if (wordMatch(word, productName) || wordMatch(word, productNameEn))
+        score += 40;
+      // Whole word match in brand
+      if (wordMatch(word, brand))
+        score += 30;
+      // Whole word match in category
+      if (wordMatch(word, category) || wordMatch(word, categoryEn))
+        score += 25;
+
+      score += 15;
+
+    } else if (isSubstring) {
+      substringMatches++;
+      // Substring match gets much lower score (Milka contains "milk" but shouldn't rank high)
+      score += 3;
     }
   }
 
+  // Penalize heavily if no whole-word matches
+  if (wholeWordMatches === 0 && substringMatches > 0) {
+    score = Math.floor(score * 0.15); // 85% penalty for substring-only matches
+  }
+
+  // Multi-word queries: penalize if less than half match
   if (queryWords.length > 1) {
-    const ratio = matchedWords / queryWords.length;
+    const totalMatches = wholeWordMatches + substringMatches;
+    const ratio = totalMatches / queryWords.length;
     if (ratio < 0.5) score = Math.floor(score * 0.1);
     else if (ratio < 0.75) score = Math.floor(score * 0.5);
   }
 
-  if (productText.includes(queryLower) || normalizedProduct.includes(normalizedQuery)) score += 100;
+  // Bonus for exact phrase match
+  const allTextLower = allText.toLowerCase();
+  if (allTextLower.includes(queryLower) || normalize(allTextLower).includes(normalize(queryLower))) {
+    score += 100;
+  }
 
   return score;
 }
@@ -115,7 +162,7 @@ Return a JSON array with up to 5 entries. Each entry:
 
 Rules:
 1. Only return products that actually match what the user searched for
-2. If searching "Nescafé Classic Kaffee", return coffee products — NOT ice cream
+2. If searching "milk", return MILK products — NOT "Milka" chocolate
 3. Realistic 2026 German discount supermarket prices
 4. Return ONLY the JSON array, no markdown
 5. If you truly can't identify the product, return []`,
@@ -196,25 +243,25 @@ export async function GET(request: NextRequest) {
       mapRowToOffer(row as Record<string, any>) // eslint-disable-line @typescript-eslint/no-explicit-any
     );
 
-    // STEP 2: Smart reranking
-    const relevant = candidates
+    // STEP 2: Smart reranking with word-boundary matching
+    const scored = candidates
       .map(offer => ({ offer, relevance: calculateRelevance(product, offer) }))
       .filter(s => s.relevance >= 15)
       .sort((a, b) => {
         if (b.relevance !== a.relevance) return b.relevance - a.relevance;
         if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;
         return a.offer.price - b.offer.price;
-      })
-      .slice(0, 30)
-      .map(s => s.offer);
+      });
 
-    const offers = relevant.filter(item => item.isOffer);
-    const regularPrices = relevant.filter(item => !item.isOffer);
+    // STEP 3: Limit results — top offers + top regular prices
+    const allRelevant = scored.map(s => s.offer);
+    const offers = allRelevant.filter(item => item.isOffer).slice(0, MAX_OFFERS_SHOWN);
+    const regularPrices = allRelevant.filter(item => !item.isOffer).slice(0, MAX_REGULAR_SHOWN);
 
-    // STEP 3: If poor results, ask Claude for estimates (SMART FALLBACK)
+    // STEP 4: If poor results, ask Claude for estimates (SMART FALLBACK)
     let aiAssisted = false;
-    if (relevant.length < MIN_RELEVANT_RESULTS && ANTHROPIC_API_KEY) {
-      console.log(`[AI Fallback] "${product}" — only ${relevant.length} results, asking Claude...`);
+    if ((offers.length + regularPrices.length) < MIN_RELEVANT_RESULTS && ANTHROPIC_API_KEY) {
+      console.log(`[AI Fallback] "${product}" — only ${offers.length + regularPrices.length} results, asking Claude...`);
       const aiEstimates = await claudeEstimate(product);
 
       if (aiEstimates.length > 0) {
@@ -224,7 +271,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // STEP 4: Build response
+    // STEP 5: Build response
     const offerPrices = offers.map(o => o.price);
     const bestPrice = offerPrices.length > 0 ? Math.min(...offerPrices) : null;
     const worstPrice = offerPrices.length > 0 ? Math.max(...offerPrices) : null;
