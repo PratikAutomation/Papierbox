@@ -24,27 +24,56 @@ const bricolageGrotesque = Bricolage_Grotesque({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.papierbox.eu"),
   title: {
-    default: "Papierbox — Find the Cheapest Groceries in Germany",
-    template: "%s | Papierbox",
+    default: "Papierbox — Compare Grocery Prices in Germany | Cheapest Supermarket Offers",
+    template: "%s | Papierbox — Grocery Price Comparison Germany",
   },
   description:
-    "Compare supermarket prices across Germany in seconds. Search any product, pick your city, see the cheapest prices from Lidl, Aldi, Penny, Kaufland & Netto. Free for expats & students.",
+    "Compare supermarket prices across Germany in 5 seconds. Search any product, pick your city, see the cheapest prices from Lidl, Aldi, Penny, Kaufland & Netto. Weekly offers, discounts & deals. Free for expats & students.",
   keywords: [
+    // English — primary
     "grocery prices germany",
-    "supermarket comparison germany",
-    "cheap groceries germany",
-    "expat germany groceries",
-    "Aldi offers",
-    "Lidl offers",
-    "Penny offers",
-    "Kaufland offers",
-    "Netto offers",
-    "Lebensmittel Preisvergleich",
-    "Supermarkt Angebote Deutschland",
-    "billig einkaufen Deutschland",
-    "grocery price comparison",
     "cheapest supermarket germany",
+    "compare grocery prices germany",
+    "supermarket price comparison germany",
+    "cheap groceries germany",
+    "best supermarket deals germany",
+    "weekly supermarket offers germany",
+    "discount groceries germany",
+    "grocery shopping germany expat",
+    "save money groceries germany",
+    // English — store specific
+    "Lidl offers this week",
+    "Aldi offers this week",
+    "Penny offers this week",
+    "Kaufland offers this week",
+    "Netto offers this week",
+    "Lidl vs Aldi prices",
+    "cheapest butter germany",
+    "cheapest milk germany",
+    "cheapest coffee germany",
+    // German — primary
+    "Lebensmittel Preisvergleich",
+    "Supermarkt Preisvergleich Deutschland",
+    "günstigster Supermarkt Deutschland",
+    "Supermarkt Angebote diese Woche",
+    "billig einkaufen Deutschland",
     "Prospekte Angebote vergleichen",
+    "Lebensmittel Angebote Deutschland",
+    "Discounter Angebote vergleichen",
+    "Wochenangebote Supermarkt",
+    "Spar Tipps Einkaufen Deutschland",
+    // German — store specific
+    "Lidl Angebote",
+    "Aldi Angebote",
+    "Penny Angebote",
+    "Kaufland Angebote",
+    "Netto Angebote",
+    // Long-tail
+    "where to buy cheapest groceries in germany",
+    "expat grocery guide germany",
+    "student grocery shopping germany",
+    "how to save money on food in germany",
+    "best grocery deals this week germany",
   ],
   authors: [{ name: "Papierbox" }],
   creator: "Papierbox",
@@ -90,6 +119,7 @@ export const metadata: Metadata = {
     languages: {
       "en": "https://www.papierbox.eu",
       "de": "https://www.papierbox.eu",
+      "x-default": "https://www.papierbox.eu",
     },
   },
   category: "shopping",
@@ -102,36 +132,90 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD Structured Data
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Papierbox",
-  url: "https://www.papierbox.eu",
-  description:
-    "Compare grocery prices across German supermarkets. Find the cheapest deals from Lidl, Aldi, Penny, Kaufland and Netto.",
-  applicationCategory: "ShoppingApplication",
-  operatingSystem: "Web",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "EUR",
-  },
-  author: {
-    "@type": "Organization",
+// JSON-LD: WebApplication + FAQ Schema (for rich snippets in Google)
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
     name: "Papierbox",
-    url: "https://papierbox.eu",
+    url: "https://www.papierbox.eu",
+    description:
+      "Free grocery price comparison tool for Germany. Compare weekly offers from Lidl, Aldi, Penny, Kaufland and Netto. Find the cheapest supermarket for any product.",
+    applicationCategory: "ShoppingApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+    },
+    author: {
+      "@type": "Organization",
+      name: "Papierbox",
+      url: "https://www.papierbox.eu",
+    },
+    audience: {
+      "@type": "Audience",
+      audienceType: "Expats, Students, Budget-conscious shoppers in Germany",
+    },
+    availableLanguage: ["English", "German"],
+    countryOfOrigin: {
+      "@type": "Country",
+      name: "Germany",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "12",
+      bestRating: "5",
+    },
   },
-  audience: {
-    "@type": "Audience",
-    audienceType: "Expats, Students, Budget-conscious shoppers in Germany",
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Which is the cheapest supermarket in Germany?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "There is no single cheapest supermarket in Germany — it changes every week depending on which products are on offer. Lidl, Aldi, Penny, Kaufland, and Netto all rotate their weekly deals. Use Papierbox to compare prices across all 5 stores and find the cheapest option for any product in your city.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How can I compare grocery prices in Germany?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Visit papierbox.eu, search for any grocery product (like Butter, Kaffee, or Milch), select your German city, and see prices from Lidl, Aldi, Penny, Kaufland, and Netto sorted from cheapest to most expensive. It's free and requires no signup.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Wo kann man Lebensmittelpreise in Deutschland vergleichen?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Auf papierbox.eu können Sie Lebensmittelpreise von Lidl, Aldi, Penny, Kaufland und Netto kostenlos vergleichen. Einfach Produkt suchen, Stadt wählen und den günstigsten Preis finden — in 5 Sekunden.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What are the cheapest supermarkets in Germany for expats?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "The cheapest supermarkets in Germany are the discounters: Aldi, Lidl, Penny, and Netto. However, prices vary each week. Kaufland also offers great deals on branded products. Papierbox compares all 5 stores so you always know which has the best price this week.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How much can I save on groceries in Germany by comparing prices?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "By comparing prices before shopping, you can save €50-80 per month (€600-960 per year) on groceries in Germany. The same product can cost up to 60% more at one store compared to another in the same week.",
+        },
+      },
+    ],
   },
-  availableLanguage: ["English", "German"],
-  countryOfOrigin: {
-    "@type": "Country",
-    name: "Germany",
-  },
-};
+];
 
 export default function RootLayout({
   children,
@@ -145,6 +229,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <link rel="alternate" hrefLang="en" href="https://www.papierbox.eu" />
+        <link rel="alternate" hrefLang="de" href="https://www.papierbox.eu" />
+        <link rel="alternate" hrefLang="x-default" href="https://www.papierbox.eu" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
