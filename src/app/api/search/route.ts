@@ -3,96 +3,127 @@ import { supabase } from '@/lib/supabase';
 import { Offer, SearchResult } from '@/lib/types';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const MIN_RELEVANT_RESULTS = 2;
-const MAX_OFFERS_SHOWN = 8;
-const MAX_REGULAR_SHOWN = 3;
+const MAX_OFFERS = 8;
+const MAX_REGULAR = 3;
 
 function sanitizeInput(input: string): string {
   return input.trim().slice(0, 100).replace(/<[^>]*>/g, '');
 }
 
-function normalize(s: string): string {
-  return s
+function norm(s: string): string {
+  return s.toLowerCase()
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
     .replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e');
 }
 
 /**
- * Check if a word matches as a WHOLE WORD in text (not as substring).
- * "milk" matches "Milk", "Fresh Milk 1L" but NOT "Milka"
+ * PRECISE PRODUCT MATCHING
+ *
+ * Core principle: If user searches "butter", show ONLY butter.
+ * Not butter croissants, not buttermilk, not butter biscuits.
+ *
+ * How: Check if the search query matches the product's CATEGORY.
+ * A product's category tells us what the product IS.
+ * "Butter Croissant" → category is "Bakery" → NOT butter.
+ * "Kerrygold Butter" → category is "Butter/Dairy" → IS butter.
  */
-function wordMatch(word: string, text: string): boolean {
-  const regex = new RegExp(`(?:^|[\\s,./\\-_()"])${word}(?:[\\s,./\\-_()"]|$)`, 'i');
-  return regex.test(text) || regex.test(normalize(text));
-}
+function scoreProduct(query: string, offer: Offer): number {
+  const q = norm(query);
+  const qWords = q.split(/\s+/).filter(w => w.length >= 2);
 
-/**
- * Check if a word matches anywhere as substring (looser matching).
- */
-function substringMatch(word: string, text: string): boolean {
-  return text.toLowerCase().includes(word) || normalize(text.toLowerCase()).includes(normalize(word));
-}
-
-function calculateRelevance(query: string, offer: Offer): number {
-  const queryLower = query.toLowerCase();
-  const queryWords = queryLower.split(/\s+/).filter(w => w.length >= 2);
-
-  const productName = offer.productName || '';
-  const productNameEn = offer.productNameEn || '';
-  const brand = offer.brand || '';
-  const category = offer.category || '';
-  const categoryEn = offer.categoryEn || '';
-
-  const allText = [productName, productNameEn, brand, category, categoryEn].join(' ');
+  const pName = norm(offer.productName || '');
+  const pNameEn = norm(offer.productNameEn || '');
+  const brand = norm(offer.brand || '');
+  const cat = norm(offer.category || '');
+  const catEn = norm(offer.categoryEn || '');
 
   let score = 0;
-  let wholeWordMatches = 0;
-  let substringMatches = 0;
 
-  for (const word of queryWords) {
-    const nWord = normalize(word);
-    const isWholeWord = wordMatch(word, allText) || wordMatch(nWord, allText);
-    const isSubstring = substringMatch(word, allText.toLowerCase());
+  // ===================================================
+  // TIER 1: EXACT PRODUCT MATCH (highest priority)
+  // Full query appears in product name
+  // "kerrygold original irish butter" in "Kerrygold Original Irische Butter"
+  // ===================================================
+  if (pName.includes(q) || pNameEn.includes(q)) {
+    score += 200;
+  }
 
-    if (isWholeWord) {
-      wholeWordMatches++;
+  // ===================================================
+  // TIER 2: CATEGORY MATCH (most important for generic searches)
+  // User searches "butter" → category IS "butter" or "dairy"
+  // This is what separates real butter from butter croissants
+  // ===================================================
+  const categoryMatch =
+    cat.includes(q) || catEn.includes(q) ||
+    qWords.some(w => cat === w || catEn === w) ||
+    qWords.some(w => cat.includes(w) && w.length >= 4) ||
+    qWords.some(w => catEn.includes(w) && w.length >= 4);
 
-      // Whole word match in product name — highest value
-      if (wordMatch(word, productName) || wordMatch(word, productNameEn))
-        score += 40;
-      // Whole word match in brand
-      if (wordMatch(word, brand))
-        score += 30;
-      // Whole word match in category
-      if (wordMatch(word, category) || wordMatch(word, categoryEn))
-        score += 25;
+  if (categoryMatch) {
+    score += 150;
+  }
 
-      score += 15;
+  // ===================================================
+  // TIER 3: BRAND MATCH
+  // User searches "kerrygold" or "milka"
+  // ===================================================
+  const brandMatch = qWords.some(w =>
+    brand.includes(w) || brand === q
+  );
+  if (brandMatch) {
+    score += 100;
+  }
 
-    } else if (isSubstring) {
-      substringMatches++;
-      // Substring match gets much lower score (Milka contains "milk" but shouldn't rank high)
-      score += 3;
+  // ===================================================
+  // TIER 4: PRODUCT NAME WORD MATCH
+  // Check how many query words appear as whole words in product name
+  // ===================================================
+  let nameWordMatches = 0;
+  for (const w of qWords) {
+    // Word boundary check: "milk" matches "Milk 1L" but not "Milka"
+    const wbRegex = new RegExp(`(?:^|[\\s,./\\-_()])${w}(?:[\\s,./\\-_()]|$)`, 'i');
+    if (wbRegex.test(pName) || wbRegex.test(pNameEn)) {
+      nameWordMatches++;
+      score += 30;
     }
   }
 
-  // Penalize heavily if no whole-word matches
-  if (wholeWordMatches === 0 && substringMatches > 0) {
-    score = Math.floor(score * 0.15); // 85% penalty for substring-only matches
+  // ===================================================
+  // PENALTY: If product name contains query word but
+  // category does NOT match → it's a modifier, not the product
+  // "Butter Croissant" (Bakery) when searching "butter" → REJECT
+  // ===================================================
+  if (!categoryMatch && !brandMatch && nameWordMatches > 0) {
+    // The query word appears in the name but this isn't that type of product
+    // Check if the query is likely a category/product type (common grocery items)
+    const commonProducts = [
+      'butter', 'milk', 'milch', 'bread', 'brot', 'cheese', 'kaese',
+      'coffee', 'kaffee', 'tea', 'tee', 'sugar', 'zucker', 'flour', 'mehl',
+      'rice', 'reis', 'pasta', 'nudeln', 'oil', 'oel', 'water', 'wasser',
+      'juice', 'saft', 'yogurt', 'joghurt', 'cream', 'sahne', 'egg', 'eier',
+      'chicken', 'haehnchen', 'beef', 'rind', 'pork', 'schwein', 'fish', 'fisch',
+      'salmon', 'lachs', 'chocolate', 'schokolade', 'chips', 'ice', 'eis',
+      'beer', 'bier', 'wine', 'wein', 'sekt', 'vodka', 'whisky',
+    ];
+
+    const isGenericProduct = qWords.some(w => commonProducts.includes(w));
+
+    if (isGenericProduct) {
+      // User searched a generic product but this item's category doesn't match
+      // → This is butter croissant, not butter → heavy penalty
+      score = Math.floor(score * 0.05); // 95% reduction
+    }
   }
 
-  // Multi-word queries: penalize if less than half match
-  if (queryWords.length > 1) {
-    const totalMatches = wholeWordMatches + substringMatches;
-    const ratio = totalMatches / queryWords.length;
-    if (ratio < 0.5) score = Math.floor(score * 0.1);
-    else if (ratio < 0.75) score = Math.floor(score * 0.5);
-  }
-
-  // Bonus for exact phrase match
-  const allTextLower = allText.toLowerCase();
-  if (allTextLower.includes(queryLower) || normalize(allTextLower).includes(normalize(queryLower))) {
-    score += 100;
+  // ===================================================
+  // MULTI-WORD BONUS: More matching words = better
+  // "Kerrygold Irish Butter" → all 3 words match = high score
+  // ===================================================
+  if (qWords.length > 1) {
+    const totalMatches = nameWordMatches + (brandMatch ? 1 : 0) + (categoryMatch ? 1 : 0);
+    const ratio = totalMatches / qWords.length;
+    if (ratio >= 0.8) score += 50; // Almost all words match
+    else if (ratio < 0.3) score = Math.floor(score * 0.2); // Very few words match
   }
 
   return score;
@@ -121,10 +152,6 @@ function mapRowToOffer(row: Record<string, any>): Offer {
   };
 }
 
-/**
- * Claude AI Fallback — when our database doesn't have relevant results,
- * ask Claude for estimated prices based on its knowledge of German supermarkets.
- */
 async function claudeEstimate(query: string): Promise<Offer[]> {
   if (!ANTHROPIC_API_KEY) return [];
 
@@ -146,42 +173,36 @@ async function claudeEstimate(query: string): Promise<Offer[]> {
         max_tokens: 2048,
         messages: [{
           role: 'user',
-          content: `You are a German grocery pricing expert. A user searched for "${query}" on a grocery price comparison website, but we have no matching offers in our database.
+          content: `You are a German grocery pricing expert. A user searched for "${query}" on a grocery price comparison website, but we have no matching offers.
 
-Based on your knowledge of current German supermarket prices (Lidl, Aldi Süd, Penny, Kaufland, Netto), provide estimated typical prices for this product or the closest matching products.
+Provide estimated typical prices for EXACTLY this product (not related products).
 
-Return a JSON array with up to 5 entries. Each entry:
-- brand: string (e.g., "Nescafé", "JA!", "Eigenmarke")
-- product_name: string (full name with brand)
-- product_name_en: string (English translation)
-- category: string (German category)
-- category_en: string (English category)
-- price: number (typical price in EUR)
-- unit: string (e.g., "200g", "500ml")
-- store: string (which store typically has this, e.g., "Lidl")
+If user searched "butter", return ONLY butter — not butter croissants or buttermilk.
+If user searched "Kerrygold Irish Butter", return ONLY Kerrygold Irish Butter.
 
-Rules:
-1. Only return products that actually match what the user searched for
-2. If searching "milk", return MILK products — NOT "Milka" chocolate
-3. Realistic 2026 German discount supermarket prices
-4. Return ONLY the JSON array, no markdown
-5. If you truly can't identify the product, return []`,
+Return a JSON array with up to 5 entries:
+- brand: string
+- product_name: string (full name)
+- product_name_en: string (English)
+- category: string (German)
+- category_en: string (English)
+- price: number (EUR)
+- unit: string
+- store: string (Lidl/Aldi Süd/Penny/Kaufland/Netto)
+
+Return ONLY the JSON array. If you can't identify the product, return [].`,
         }],
       }),
     });
 
     if (!response.ok) return [];
-
     const data = await response.json();
     const text = data.content?.[0]?.text?.trim() || '[]';
+    let clean = text;
+    if (clean.startsWith('```')) clean = clean.split('\n').slice(1, -1).join('\n');
+    clean = clean.replace(/,\s*}/g, '}').replace(/,\s*\]/g, ']');
 
-    let cleanText = text;
-    if (cleanText.startsWith('```')) {
-      cleanText = cleanText.split('\n').slice(1, -1).join('\n');
-    }
-    cleanText = cleanText.replace(/,\s*}/g, '}').replace(/,\s*\]/g, ']');
-
-    const products = JSON.parse(cleanText);
+    const products = JSON.parse(clean);
     if (!Array.isArray(products)) return [];
 
     return products
@@ -199,10 +220,7 @@ Rules:
         price: Number(p.price),
         originalPrice: null,
         unit: (p.unit as string) || 'Stück',
-        validFrom: '',
-        validTo: '',
-        isOffer: false,
-        sourceUrl: '',
+        validFrom: '', validTo: '', isOffer: false, sourceUrl: '',
       }));
   } catch (error) {
     console.error('Claude estimate error:', error);
@@ -227,11 +245,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product parameter must be non-empty' }, { status: 400 });
     }
 
-    // STEP 1: Get candidates from database
+    // STEP 1: Get candidates from database (broad search)
     const { data: rpcData, error: rpcError } = await supabase.rpc('search_offers', {
       search_query: product,
       city_slug: city,
-      result_limit: 100,
+      result_limit: 150,
     });
 
     if (rpcError) {
@@ -243,31 +261,29 @@ export async function GET(request: NextRequest) {
       mapRowToOffer(row as Record<string, any>) // eslint-disable-line @typescript-eslint/no-explicit-any
     );
 
-    // STEP 2: Smart reranking with word-boundary matching
+    // STEP 2: PRECISE scoring — category-aware, word-boundary
     const scored = candidates
-      .map(offer => ({ offer, relevance: calculateRelevance(product, offer) }))
-      .filter(s => s.relevance >= 15)
+      .map(offer => ({ offer, score: scoreProduct(product, offer) }))
+      .filter(s => s.score >= 30) // Higher threshold — only genuinely relevant
       .sort((a, b) => {
-        if (b.relevance !== a.relevance) return b.relevance - a.relevance;
+        if (b.score !== a.score) return b.score - a.score;
         if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;
         return a.offer.price - b.offer.price;
       });
 
-    // STEP 3: Limit results — top offers + top regular prices
+    // STEP 3: Limit results
     const allRelevant = scored.map(s => s.offer);
-    const offers = allRelevant.filter(item => item.isOffer).slice(0, MAX_OFFERS_SHOWN);
-    const regularPrices = allRelevant.filter(item => !item.isOffer).slice(0, MAX_REGULAR_SHOWN);
+    const offers = allRelevant.filter(i => i.isOffer).slice(0, MAX_OFFERS);
+    const regularPrices = allRelevant.filter(i => !i.isOffer).slice(0, MAX_REGULAR);
 
-    // STEP 4: If poor results, ask Claude for estimates (SMART FALLBACK)
+    // STEP 4: Claude fallback if too few results
     let aiAssisted = false;
-    if ((offers.length + regularPrices.length) < MIN_RELEVANT_RESULTS && ANTHROPIC_API_KEY) {
-      console.log(`[AI Fallback] "${product}" — only ${offers.length + regularPrices.length} results, asking Claude...`);
+    if ((offers.length + regularPrices.length) < 2 && ANTHROPIC_API_KEY) {
+      console.log(`[AI Fallback] "${product}" — ${offers.length + regularPrices.length} results, asking Claude...`);
       const aiEstimates = await claudeEstimate(product);
-
       if (aiEstimates.length > 0) {
         aiEstimates.forEach(e => regularPrices.push(e));
         aiAssisted = true;
-        console.log(`[AI Fallback] Claude provided ${aiEstimates.length} estimated prices`);
       }
     }
 
@@ -277,28 +293,16 @@ export async function GET(request: NextRequest) {
     const worstPrice = offerPrices.length > 0 ? Math.max(...offerPrices) : null;
     const savingsAmount = bestPrice !== null && worstPrice !== null ? worstPrice - bestPrice : null;
 
-    const searchResult: SearchResult = {
-      product,
-      city,
-      offers,
-      regularPrices,
-      bestPrice,
-      worstPrice,
-      savingsAmount,
-      totalOffers: offers.length,
-      totalRegular: regularPrices.length,
-      isSuggestion: aiAssisted && offers.length === 0,
-    };
-
     return NextResponse.json(
       {
-        data: searchResult,
-        meta: {
-          query: product,
-          city,
-          timestamp: new Date().toISOString(),
-          aiAssisted,
-        },
+        data: {
+          product, city, offers, regularPrices,
+          bestPrice, worstPrice, savingsAmount,
+          totalOffers: offers.length,
+          totalRegular: regularPrices.length,
+          isSuggestion: aiAssisted && offers.length === 0,
+        } as SearchResult,
+        meta: { query: product, city, timestamp: new Date().toISOString(), aiAssisted },
       },
       {
         status: 200,
@@ -317,15 +321,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    }
-  );
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
