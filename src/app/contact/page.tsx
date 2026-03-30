@@ -62,12 +62,30 @@ export default function Contact() {
 
     setStatus("sending");
     try {
-      const res = await fetch("/api/contact", {
+      // 1. Send email via Web3Forms (client-side — required by Web3Forms)
+      const emailRes = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: "79d8e709-6ea4-4a6c-85d5-d2aaf91b7641",
+          subject: `[Papierbox] ${form.topic.toUpperCase()} from ${form.firstName} ${form.lastName}`,
+          from_name: `${form.firstName} ${form.lastName}`,
+          replyto: form.email,
+          name: `${form.firstName} ${form.lastName}`,
+          email: form.email,
+          topic: form.topic,
+          message: form.message,
+        }),
+      });
+
+      // 2. Save to Supabase (backup)
+      await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, lang }),
-      });
-      if (res.ok) {
+      }).catch(() => {});
+
+      if (emailRes.ok) {
         setStatus("sent");
         setForm({ firstName: "", lastName: "", email: "", topic: "feedback", message: "" });
       } else {
