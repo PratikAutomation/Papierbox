@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 
 export default function Contact() {
   const [lang, setLang] = useState<"en" | "de">("en");
-  const [form, setForm] = useState({ firstName: "", lastName: "", topic: "feedback", message: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", topic: "feedback", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const t = {
@@ -15,6 +15,7 @@ export default function Contact() {
       subtitle: "Feedback, ideas, collaboration — we'd love to hear from you.",
       firstName: "First Name",
       lastName: "Last Name",
+      emailLabel: "Email",
       topic: "Topic",
       topicFeedback: "Feedback",
       topicBug: "Bug Report",
@@ -27,7 +28,7 @@ export default function Contact() {
       sending: "Sending...",
       sent: "Message sent! We'll get back to you soon.",
       error: "Something went wrong. Try emailing us directly.",
-      email: "Or email us directly at",
+      emailDirect: "Or email us directly at",
       response: "We typically respond within 24 hours.",
     },
     de: {
@@ -35,6 +36,7 @@ export default function Contact() {
       subtitle: "Feedback, Ideen, Zusammenarbeit — wir freuen uns von dir zu hören.",
       firstName: "Vorname",
       lastName: "Nachname",
+      emailLabel: "E-Mail",
       topic: "Thema",
       topicFeedback: "Feedback",
       topicBug: "Fehlermeldung",
@@ -47,7 +49,7 @@ export default function Contact() {
       sending: "Wird gesendet...",
       sent: "Nachricht gesendet! Wir melden uns bald bei dir.",
       error: "Etwas ist schiefgelaufen. Schreib uns direkt per E-Mail.",
-      email: "Oder schreib uns direkt an",
+      emailDirect: "Oder schreib uns direkt an",
       response: "Wir antworten in der Regel innerhalb von 24 Stunden.",
     },
   };
@@ -56,7 +58,7 @@ export default function Contact() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.firstName || !form.message) return;
+    if (!form.firstName || !form.lastName || !form.email || !form.message) return;
 
     setStatus("sending");
     try {
@@ -67,7 +69,7 @@ export default function Contact() {
       });
       if (res.ok) {
         setStatus("sent");
-        setForm({ firstName: "", lastName: "", topic: "feedback", message: "" });
+        setForm({ firstName: "", lastName: "", email: "", topic: "feedback", message: "" });
       } else {
         setStatus("error");
       }
@@ -120,10 +122,11 @@ export default function Contact() {
                   </div>
                   <div className="flex-1">
                     <label className="font-headline font-black text-sm text-[#1a1c1c] uppercase tracking-widest mb-2 block">
-                      {l.lastName}
+                      {l.lastName} *
                     </label>
                     <input
                       type="text"
+                      required
                       value={form.lastName}
                       onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                       className="w-full px-5 py-4 bg-[#f5f5f5] border-2 border-[#1a1c1c]/10 rounded-xl font-bold text-[#1a1c1c] focus:border-[#22c55e] focus:ring-0 outline-none transition-all"
@@ -131,12 +134,28 @@ export default function Contact() {
                   </div>
                 </div>
 
+                {/* Email */}
+                <div className="mb-6">
+                  <label className="font-headline font-black text-sm text-[#1a1c1c] uppercase tracking-widest mb-2 block">
+                    {l.emailLabel} *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="your@email.com"
+                    className="w-full px-5 py-4 bg-[#f5f5f5] border-2 border-[#1a1c1c]/10 rounded-xl font-bold text-[#1a1c1c] placeholder:text-[#1a1c1c]/20 focus:border-[#22c55e] focus:ring-0 outline-none transition-all"
+                  />
+                </div>
+
                 {/* Topic */}
                 <div className="mb-6">
                   <label className="font-headline font-black text-sm text-[#1a1c1c] uppercase tracking-widest mb-2 block">
-                    {l.topic}
+                    {l.topic} *
                   </label>
                   <select
+                    required
                     value={form.topic}
                     onChange={(e) => setForm({ ...form, topic: e.target.value })}
                     className="w-full px-5 py-4 bg-[#f5f5f5] border-2 border-[#1a1c1c]/10 rounded-xl font-bold text-[#1a1c1c] focus:border-[#22c55e] focus:ring-0 outline-none transition-all appearance-none cursor-pointer"
@@ -183,7 +202,7 @@ export default function Contact() {
           {/* Email Fallback */}
           <div className="text-center mt-8">
             <p className="text-[#1a1c1c]/40 font-bold text-sm">
-              {l.email}{" "}
+              {l.emailDirect}{" "}
               <a href="mailto:info@papierbox.eu" className="text-[#22c55e] font-black hover:underline">
                 info@papierbox.eu
               </a>
