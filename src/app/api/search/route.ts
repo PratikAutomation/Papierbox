@@ -66,9 +66,12 @@ function scoreProduct(query: string, offer: Offer): number {
   // ===================================================
   // TIER 3: BRAND MATCH
   // User searches "kerrygold" or "milka"
+  // Must be exact brand match, not substring
+  // "milk" should NOT match brand "milka"
   // ===================================================
+  const brandWords = brand.split(/\s+/);
   const brandMatch = qWords.some(w =>
-    brand.includes(w) || brand === q
+    brandWords.some(bw => bw === w) || brand === q
   );
   if (brandMatch) {
     score += 100;
@@ -89,30 +92,32 @@ function scoreProduct(query: string, offer: Offer): number {
   }
 
   // ===================================================
-  // PENALTY: If product name contains query word but
-  // category does NOT match → it's a modifier, not the product
-  // "Butter Croissant" (Bakery) when searching "butter" → REJECT
+  // STRICT FILTER: For generic product searches, category MUST match.
+  // If it doesn't → score = 0. No exceptions.
+  //
+  // "butter" → category must contain "butter" or "dairy/milchprodukte"
+  // "milk" → category must contain "milk" or "milch" or "dairy"
+  // "Buttered Vegetables" (Frozen) → ZERO. Not butter.
+  // "Milka Chocolate" (Sweets) → ZERO. Not milk.
   // ===================================================
-  if (!categoryMatch && !brandMatch && nameWordMatches > 0) {
-    // The query word appears in the name but this isn't that type of product
-    // Check if the query is likely a category/product type (common grocery items)
-    const commonProducts = [
-      'butter', 'milk', 'milch', 'bread', 'brot', 'cheese', 'kaese',
-      'coffee', 'kaffee', 'tea', 'tee', 'sugar', 'zucker', 'flour', 'mehl',
-      'rice', 'reis', 'pasta', 'nudeln', 'oil', 'oel', 'water', 'wasser',
-      'juice', 'saft', 'yogurt', 'joghurt', 'cream', 'sahne', 'egg', 'eier',
-      'chicken', 'haehnchen', 'beef', 'rind', 'pork', 'schwein', 'fish', 'fisch',
-      'salmon', 'lachs', 'chocolate', 'schokolade', 'chips', 'ice', 'eis',
-      'beer', 'bier', 'wine', 'wein', 'sekt', 'vodka', 'whisky',
-    ];
+  const commonProducts = [
+    'butter', 'milk', 'milch', 'bread', 'brot', 'cheese', 'kaese',
+    'coffee', 'kaffee', 'tea', 'tee', 'sugar', 'zucker', 'flour', 'mehl',
+    'rice', 'reis', 'pasta', 'nudeln', 'oil', 'oel', 'water', 'wasser',
+    'juice', 'saft', 'yogurt', 'joghurt', 'cream', 'sahne', 'egg', 'eier',
+    'chicken', 'haehnchen', 'beef', 'rind', 'pork', 'schwein', 'fish', 'fisch',
+    'salmon', 'lachs', 'chocolate', 'schokolade', 'chips', 'ice', 'eis',
+    'beer', 'bier', 'wine', 'wein', 'sekt', 'vodka', 'whisky',
+    'ham', 'schinken', 'sausage', 'wurst', 'salami',
+  ];
 
-    const isGenericProduct = qWords.some(w => commonProducts.includes(w));
+  const isGenericSearch = qWords.length <= 2 && qWords.some(w => commonProducts.includes(w));
 
-    if (isGenericProduct) {
-      // User searched a generic product but this item's category doesn't match
-      // → This is butter croissant, not butter → heavy penalty
-      score = Math.floor(score * 0.05); // 95% reduction
-    }
+  if (isGenericSearch && !categoryMatch) {
+    // Generic product search but category doesn't match → KILL IT
+    // "butter" search + "Frozen" category = 0
+    // "milk" search + "Sweets" category = 0
+    return 0;
   }
 
   // ===================================================
