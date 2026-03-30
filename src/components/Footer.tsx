@@ -14,6 +14,7 @@ const translations = {
     rules: "Rules",
     impressum: "Impressum",
     privacy: "Privacy",
+    contact: "Contact Us",
     copyright: "© 2026 Papierbox — prices change, we don't sleep.",
     region: "Region: Germany (DE)",
   },
@@ -25,6 +26,7 @@ const translations = {
     rules: "Rechtliches",
     impressum: "Impressum",
     privacy: "Datenschutz",
+    contact: "Kontakt",
     copyright: "© 2026 Papierbox — Preise ändern sich, wir schlafen nicht.",
     region: "Region: Deutschland (DE)",
   },
@@ -72,6 +74,11 @@ export default function Footer({ lang }: FooterProps) {
             <li>
               <Link href="/privacy" className="hover:text-[#22c55e] transition-all hover:pl-2">
                 {t.privacy}
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact" className="hover:text-[#22c55e] transition-all hover:pl-2">
+                {t.contact}
               </Link>
             </li>
           </ul>
