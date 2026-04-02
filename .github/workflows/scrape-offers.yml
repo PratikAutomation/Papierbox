@@ -1,15 +1,27 @@
 name: Scrape Supermarket Offers
 
+# DISABLED: Automated scraper overwrites manual PDF-extracted data (1041 offers)
+# with only ~250 scraped offers. Manual PDF workflow is 4x better.
+# Re-enable only when automated scraper quality matches manual extraction.
+#
+# Manual workflow: Download PDFs from KaufDa → Claude → SQL → Supabase
+# See: Prospect/EXTRACT_INSTRUCTIONS.md
+
 on:
-  schedule:
-    # Monday and Thursday at 5:00 UTC (6:00 AM CET)
-    - cron: '0 5 * * 1,4'
+  # Cron DISABLED — manual uploads produce better data
+  # schedule:
+  #   - cron: '0 5 * * 1,4'
   workflow_dispatch:
     inputs:
       store:
         description: 'Specific store to scrape (leave empty for all)'
         required: false
         type: string
+      skip_delete:
+        description: 'Skip deleting existing offers (true/false)'
+        required: false
+        type: string
+        default: 'false'
 
 jobs:
   scrape:
