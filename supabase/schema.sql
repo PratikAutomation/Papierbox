@@ -139,6 +139,7 @@ BEGIN
                OR o.product_name_normalized ILIKE '%' || lower(syn) || '%'
         ))
     )
+    AND (o.valid_to IS NULL OR o.valid_to >= CURRENT_DATE)
     ORDER BY
         o.is_offer DESC,
         similarity_score DESC,
