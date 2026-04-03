@@ -45,3 +45,44 @@ export interface City {
   slug: string;
   state: string;
 }
+
+export interface ParsedItem {
+  original: string;
+  normalized_de: string;
+  normalized_en: string;
+  brand: string | null;
+  category_de: string;
+  category_en: string;
+  exclude: string[];
+  qty: number;
+}
+
+export interface StoreItemDetail {
+  name: string;
+  name_de: string;
+  price: number;
+  original_price: number | null;
+  unit: string;
+  type: 'offer' | 'verified' | 'estimate';
+  qty: number;
+  valid_to: string | null;
+  savings: number | null;
+}
+
+export interface StoreRanking {
+  store_id: string;
+  store_name: string;
+  store_brand_color: string;
+  total_cost: number;
+  offer_count: number;
+  items: StoreItemDetail[];
+}
+
+export interface CompareResult {
+  parsed_items: ParsedItem[];
+  store_rankings: StoreRanking[];
+  recommended_store_id: string;
+  recommended_store_name: string;
+  total_items: number;
+  savings_vs_worst: number;
+}
