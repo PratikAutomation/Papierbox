@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Offer, SearchResult } from "@/lib/types";
+import { Offer, SearchResult, CompareResult } from "@/lib/types";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -187,9 +187,17 @@ export default function Home() {
   const [alertEmail, setAlertEmail] = useState("");
   const [alertSubmitted, setAlertSubmitted] = useState(false);
   const [missingField, setMissingField] = useState<"product" | "city" | null>(null);
+  const [mode, setMode] = useState<"search" | "list">("search");
+  const [listText, setListText] = useState("");
+  const [listPhoto, setListPhoto] = useState<string | null>(null);
+  const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const compareResultsRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const l = t[lang];
 
@@ -261,6 +269,59 @@ export default function Home() {
     }
   }
 
+  const listItemCount = listText.split(/[\n,]+/).filter(l => l.trim()).length;
+
+  async function handleCompare() {
+    setMissingField(null);
+    if (!listText.trim() && !listPhoto) {
+      setMissingField("product");
+      setTimeout(() => setMissingField(null), 2000);
+      return;
+    }
+    if (!city) {
+      setMissingField("city");
+      setTimeout(() => setMissingField(null), 2000);
+      return;
+    }
+
+    setCompareLoading(true);
+    setHasSearched(true);
+    try {
+      const res = await fetch('/api/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: listText || null,
+          image: listPhoto || null,
+          city,
+        }),
+      });
+      const data = await res.json();
+      if (data.data) {
+        setCompareResult(data.data);
+        setShowCelebration(true);
+        setTimeout(() => {
+          compareResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    } catch {
+      setCompareResult(null);
+    } finally {
+      setCompareLoading(false);
+    }
+  }
+
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target?.result as string;
+      setListPhoto(base64);
+    };
+    reader.readAsDataURL(file);
+  }
+
   function formatDate(dateStr: string) {
     const date = new Date(dateStr);
     const days = lang === "de" ? DAYS_DE : DAYS_EN;
@@ -294,6 +355,36 @@ export default function Home() {
             {l.subtext} <span className="text-primary font-bold">{l.subtextHighlight}</span>
           </p>
 
+          {/* Mode Toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex bg-white border-[3px] border-outline rounded-[2rem] p-1 shadow-neo-hover">
+              <button
+                onClick={() => setMode("search")}
+                className={`px-6 py-3 rounded-[1.6rem] font-headline font-extrabold text-sm flex items-center gap-2 transition-all ${
+                  mode === "search"
+                    ? "bg-on-surface text-white shadow-neo-hover"
+                    : "text-on-surface-variant hover:bg-gray-100"
+                }`}
+              >
+                <span className="material-symbols-outlined text-xl">search</span>
+                {lang === "en" ? "Search a product" : "Produkt suchen"}
+              </button>
+              <button
+                onClick={() => setMode("list")}
+                className={`px-6 py-3 rounded-[1.6rem] font-headline font-extrabold text-sm flex items-center gap-2 transition-all ${
+                  mode === "list"
+                    ? "bg-on-surface text-white shadow-neo-hover"
+                    : "text-on-surface-variant hover:bg-gray-100"
+                }`}
+              >
+                <span className="material-symbols-outlined text-xl">shopping_cart</span>
+                {lang === "en" ? "Compare my list" : "Liste vergleichen"}
+              </button>
+            </div>
+          </div>
+
+          {mode === "search" && (
+            <>
           {/* Search Box Neo-Brutalism Style */}
           <div className="bg-white p-2 md:p-3 rounded-[2.5rem] border-4 border-outline shadow-neo mb-10">
             <div className="flex flex-col md:flex-row gap-2">
@@ -400,6 +491,86 @@ export default function Home() {
               );
             })}
           </div>
+            </>
+          )}
+
+          {mode === "list" && (
+            <>
+              <div className="bg-white p-2 md:p-3 rounded-[2.5rem] border-4 border-outline shadow-neo mb-10">
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute top-6 left-6 text-on-surface-variant text-2xl opacity-50">
+                    format_list_bulleted
+                  </span>
+                  <textarea
+                    className="w-full min-h-[180px] pl-16 pr-6 py-5 bg-transparent border-none rounded-t-[2rem] focus:ring-0 text-base font-semibold placeholder:text-slate-300 resize-y leading-relaxed"
+                    placeholder={lang === "en"
+                      ? "Type your grocery list here...\n\nExample:\nMilk\n2x Butter\nEggs\nChicken breast"
+                      : "Einkaufsliste hier eingeben...\n\nBeispiel:\nMilch\n2x Butter\nEier\nHähnchenbrust"
+                    }
+                    value={listText}
+                    onChange={(e) => setListText(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center justify-between px-4 py-3 border-t-2 border-outline/5">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-surface-container px-4 py-1.5 rounded-full font-headline font-extrabold text-sm text-on-surface-variant">
+                      <strong className="text-primary-dark">{listItemCount}</strong> {lang === "en" ? "items" : "Artikel"}
+                    </span>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-outline bg-white font-headline font-extrabold text-sm shadow-neo-hover hover:translate-y-[-2px] hover:shadow-neo transition-all"
+                    >
+                      <span className="material-symbols-outlined text-lg text-primary-dark">photo_camera</span>
+                      {lang === "en" ? "Upload Photo" : "Foto hochladen"}
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                    />
+                    {listPhoto && (
+                      <span className="text-primary font-bold text-sm flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                        {lang === "en" ? "Photo added" : "Foto hinzugefugt"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col md:flex-row gap-2 px-2 pb-2">
+                  <div className="flex-1 relative">
+                    <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant text-2xl">
+                      location_on
+                    </span>
+                    <select
+                      className={`w-full pl-16 pr-6 py-5 bg-surface-container-low border-2 border-outline/10 rounded-[2rem] focus:ring-0 text-xl font-bold appearance-none cursor-pointer transition-all ${
+                        missingField === "city" ? "ring-2 ring-red-400 bg-red-50/50 text-red-500" : ""
+                      }`}
+                      value={city}
+                      onChange={(e) => { setCity(e.target.value); setMissingField(null); }}
+                    >
+                      <option value="">{lang === "en" ? "Where you at?" : "Wo bist du?"}</option>
+                      {CITIES.map((c) => (
+                        <option key={c.value} value={c.value}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleCompare}
+                    disabled={compareLoading}
+                    className="md:w-auto bg-primary text-white font-headline font-black text-xl px-10 py-5 rounded-[2rem] border-2 border-outline shadow-neo hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 neo-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {compareLoading
+                      ? (lang === "en" ? "Crunching..." : "Berechne...")
+                      : (lang === "en" ? "FIND BEST STORE" : "BESTEN LADEN FINDEN")
+                    }
+                    <span className="material-symbols-outlined">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </section>
 
         {/* Results Section */}
@@ -414,23 +585,11 @@ export default function Home() {
               </div>
             ) : result && (result.totalOffers > 0 || result.totalRegular > 0) ? (
               <>
-                {/* Suggestion Banner */}
-                {result.isSuggestion && (
-                  <div className="flex items-center gap-3 bg-amber-50 px-6 py-4 rounded-2xl border-2 border-outline mb-6">
-                    <span className="material-symbols-outlined text-amber-600">lightbulb</span>
-                    <p className="text-on-surface font-bold text-sm">
-                      {l.noMatch} &quot;{query}&quot; &mdash; {l.bestDealsInstead}
-                    </p>
-                  </div>
-                )}
-
                 {/* Summary Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 bg-white border-4 border-outline p-8 rounded-[2.5rem] shadow-neo">
                   <div>
                     <h2 className="font-headline font-black text-3xl text-on-surface mb-1">
-                      {result.isSuggestion
-                        ? l.todaysBestDeals
-                        : `${result.product} ${l.inCity} ${getCityLabel(result.city)}`}
+                      {result.product} {l.inCity} {getCityLabel(result.city)}
                     </h2>
                     <div className="flex items-center gap-2">
                       <span className="flex h-3 w-3 rounded-full bg-primary animate-pulse"></span>
