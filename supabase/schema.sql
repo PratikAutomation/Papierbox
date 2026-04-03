@@ -235,3 +235,27 @@ INSERT INTO bilingual_synonyms (term, synonyms) VALUES
 ('tomaten', ARRAY['tomatoes', 'cherry tomaten']),
 ('gurke', ARRAY['cucumber', 'salatgurke']),
 ('bananen', ARRAY['bananas', 'banane']);
+
+-- ============================================================
+-- PRICE ESTIMATES CACHE (for Smart Basket feature)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS price_estimates (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_normalized TEXT NOT NULL,
+  store_id TEXT NOT NULL REFERENCES stores(id),
+  unit TEXT NOT NULL DEFAULT 'Stk',
+  estimated_price DECIMAL(10,2) NOT NULL,
+  confidence TEXT NOT NULL DEFAULT 'medium',
+  estimated_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '7 days'),
+  UNIQUE(product_normalized, store_id)
+);
+
+ALTER TABLE price_estimates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read price_estimates" ON price_estimates FOR SELECT USING (true);
+CREATE POLICY "Service insert price_estimates" ON price_estimates FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service update price_estimates" ON price_estimates FOR UPDATE USING (true);
+
+CREATE INDEX idx_price_estimates_product ON price_estimates(product_normalized);
+CREATE INDEX idx_price_estimates_expires ON price_estimates(expires_at);
