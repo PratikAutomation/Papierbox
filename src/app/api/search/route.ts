@@ -42,10 +42,10 @@ function scoreProduct(query: string, offer: Offer): number {
 
   // ===================================================
   // TIER 1: EXACT PRODUCT MATCH (highest priority)
-  // Full query appears in product name
-  // "kerrygold original irish butter" in "Kerrygold Original Irische Butter"
+  // Full query appears in product name OR product name appears in query
+  // "mango" in "Mango" ✓, "mangos" contains "mango" ✓
   // ===================================================
-  if (pName.includes(q) || pNameEn.includes(q)) {
+  if (pName.includes(q) || pNameEn.includes(q) || q.includes(pName) || q.includes(pNameEn)) {
     score += 200;
   }
 
@@ -80,13 +80,17 @@ function scoreProduct(query: string, offer: Offer): number {
 
   // ===================================================
   // TIER 4: PRODUCT NAME WORD MATCH
-  // Check how many query words appear as whole words in product name
+  // Check how many query words appear in product name
+  // Handles stems: "mangos" matches "mango", "tomatoes" matches "tomate"
   // ===================================================
   let nameWordMatches = 0;
   for (const w of qWords) {
     // Word boundary check: "milk" matches "Milk 1L" but not "Milka"
     const wbRegex = new RegExp(`(?:^|[\\s,./\\-_()])${w}(?:[\\s,./\\-_()]|$)`, 'i');
-    if (wbRegex.test(pName) || wbRegex.test(pNameEn)) {
+    // Also check stem overlap: shorter of (query word, product word) is substring of longer
+    const stemMatch = pName.split(/\s+/).some(pw => pw.includes(w) || w.includes(pw)) ||
+                      pNameEn.split(/\s+/).some(pw => pw.includes(w) || w.includes(pw));
+    if (wbRegex.test(pName) || wbRegex.test(pNameEn) || stemMatch) {
       nameWordMatches++;
       score += 30;
     }
@@ -251,32 +255,45 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product parameter must be non-empty' }, { status: 400 });
     }
 
-    // STEP 1: Normalize query via Claude (fixes "Mangos" -> "Mango", typos, etc.)
-    let searchTerm = product;
-    let excludeTerms: string[] = [];
-    try {
-      const normalized = await normalizeSingle(product);
-      searchTerm = normalized.normalized_de || product;
-      excludeTerms = normalized.exclude || [];
-    } catch (error) {
-      console.error('Normalization failed, using raw query:', error);
-    }
+    // STEP 1: Normalize query (local + Claude if available)
+    const normalized = await normalizeSingle(product);
+    const searchTerm = normalized.normalized_de || product;
+    const excludeTerms = normalized.exclude || [];
 
-    // STEP 2: Get candidates from database (broad search)
+    // STEP 2: Get candidates from database — search with BOTH normalized and original terms
     const { data: rpcData, error: rpcError } = await supabase.rpc('search_offers', {
       search_query: searchTerm,
       city_slug: city,
       result_limit: 150,
     });
 
+    // Also search with original term if different from normalized (catches more results)
+    let extraCandidates: Record<string, unknown>[] = [];
+    if (searchTerm.toLowerCase() !== product.toLowerCase()) {
+      const { data: extraData } = await supabase.rpc('search_offers', {
+        search_query: product,
+        city_slug: city,
+        result_limit: 50,
+      });
+      extraCandidates = extraData || [];
+    }
+
     if (rpcError) {
       console.error('Supabase RPC error:', rpcError);
       return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
 
-    const candidates: Offer[] = (rpcData || []).map((row: Record<string, unknown>) =>
-      mapRowToOffer(row as Record<string, any>) // eslint-disable-line @typescript-eslint/no-explicit-any
-    );
+    // Merge and deduplicate candidates
+    const allRows = [...(rpcData || []), ...extraCandidates];
+    const seenIds = new Set<string>();
+    const candidates: Offer[] = [];
+    for (const row of allRows) {
+      const r = row as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (!seenIds.has(r.id)) {
+        seenIds.add(r.id);
+        candidates.push(mapRowToOffer(r));
+      }
+    }
 
     // STEP 3: PRECISE scoring — category-aware, word-boundary + Claude exclusion filtering
     const scored = candidates

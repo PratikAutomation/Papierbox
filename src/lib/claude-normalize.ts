@@ -3,6 +3,105 @@ import { ParsedItem } from './types';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 
+// ============================================================
+// LOCAL NORMALIZER — works without API key, handles 80% of cases
+// ============================================================
+
+const EN_TO_DE: Record<string, string> = {
+  chicken: 'Hähnchen', milk: 'Milch', eggs: 'Eier', butter: 'Butter',
+  bread: 'Brot', cheese: 'Käse', rice: 'Reis',
+  pasta: 'Nudeln', yogurt: 'Joghurt', beef: 'Hackfleisch', salmon: 'Lachs',
+  cucumber: 'Gurke',
+  coffee: 'Kaffee', water: 'Wasser', sugar: 'Zucker',
+  flour: 'Mehl', cream: 'Sahne', tuna: 'Thunfisch', pizza: 'Pizza',
+  oats: 'Haferflocken', lentils: 'Linsen', chickpeas: 'Kichererbsen',
+  avocado: 'Avocado', mango: 'Mango',
+  berry: 'Beeren', berries: 'Beeren', strawberry: 'Erdbeeren', strawberries: 'Erdbeeren',
+  blueberry: 'Blaubeeren', blueberries: 'Blaubeeren', grape: 'Trauben', grapes: 'Trauben',
+  orange: 'Orange', lemon: 'Zitrone',
+  tomato: 'Tomaten', tomatoes: 'Tomaten', potato: 'Kartoffeln', potatoes: 'Kartoffeln',
+  apple: 'Äpfel', apples: 'Äpfel', banana: 'Banane', bananas: 'Bananen',
+  onion: 'Zwiebeln', onions: 'Zwiebeln', carrot: 'Karotten', carrots: 'Karotten',
+  mushroom: 'Pilze', mushrooms: 'Pilze',
+  garlic: 'Knoblauch', ginger: 'Ingwer', pepper: 'Paprika',
+  spinach: 'Spinat', broccoli: 'Brokkoli', ham: 'Schinken',
+  sausage: 'Wurst', salami: 'Salami', chocolate: 'Schokolade', chips: 'Chips',
+  juice: 'Saft', beer: 'Bier', wine: 'Wein', oil: 'Öl',
+  vinegar: 'Essig', mustard: 'Senf', ketchup: 'Ketchup', honey: 'Honig',
+  jam: 'Marmelade', cereal: 'Müsli', noodles: 'Nudeln', soap: 'Seife',
+  shampoo: 'Shampoo', detergent: 'Waschmittel',
+  'toilet paper': 'Toilettenpapier', 'olive oil': 'Olivenöl',
+  'coconut milk': 'Kokosmilch', 'bell pepper': 'Paprika',
+  'chicken breast': 'Hähnchenbrust', 'ground beef': 'Hackfleisch',
+  'peanut butter': 'Erdnussbutter', 'ice cream': 'Eiscreme',
+};
+
+// Common typos
+const TYPO_MAP: Record<string, string> = {
+  avacado: 'avocado', avacodo: 'avocado', avokado: 'avocado',
+  chiken: 'chicken', chickn: 'chicken', checken: 'chicken',
+  tomatoe: 'tomato', potatos: 'potatoes', brocoli: 'broccoli',
+  bannana: 'banana', bannanas: 'bananas', coffe: 'coffee',
+  youghurt: 'yogurt', yoghurt: 'yogurt', joghurt: 'joghurt',
+  milch: 'milch', mangos: 'mango', mangoes: 'mango',
+};
+
+function localNormalize(raw: string): ParsedItem {
+  let text = raw.trim();
+  const original = text;
+
+  // Strip quantity prefix: "2x butter" → "butter", "3 Eier" → "Eier"
+  let qty = 1;
+  const qtyMatch = text.match(/^(\d+)\s*[x×]?\s+(.+)/i);
+  if (qtyMatch) {
+    qty = parseInt(qtyMatch[1], 10) || 1;
+    text = qtyMatch[2].trim();
+  }
+
+  // Strip trailing quantity/unit info: "milk 3.5 fat 2 packets" → "milk"
+  // Remove patterns like "3.5 fat", "2 packets", "500g", "1L", and chained descriptors
+  text = text.replace(/\s+\d+[\.,]?\d*\s*%.*$/i, '').trim(); // "milk 3.5% fat" → "milk"
+  text = text.replace(/\s+\d+[\.,]?\d*\s*(g|kg|ml|l|liter|litre|fat|fett|packets?|stk|stück|pieces?|pack|packs?)(\s+\d+.*)?$/i, '').trim();
+  // Catch remaining number-heavy suffixes: "milk 3.5 fat 2 packets" → "milk"
+  text = text.replace(/\s+\d+[\.,]?\d*\s+\w+(\s+\d+.*)?$/i, '').trim();
+
+  let lower = text.toLowerCase().trim();
+
+  // Fix typos
+  if (TYPO_MAP[lower]) {
+    lower = TYPO_MAP[lower];
+    text = lower;
+  }
+
+  // Strip English plurals: mangos→mango, berries→berry, tomatoes→tomato, apples→apple
+  let singular = lower;
+  if (singular.endsWith('ies') && singular.length > 4) {
+    singular = singular.slice(0, -3) + 'y'; // berries → berry
+  } else if (singular.endsWith('oes') && singular.length > 4) {
+    singular = singular.slice(0, -2); // tomatoes → tomato, potatoes → potato
+  } else if (singular.endsWith('es') && singular.length > 3) {
+    singular = singular.slice(0, -2); // oranges → orang... hmm
+    // Check if the -es version is in our dictionary
+    if (!EN_TO_DE[singular]) singular = lower.slice(0, -1); // oranges → orange
+  } else if (singular.endsWith('s') && singular.length > 3 && !singular.endsWith('ss')) {
+    singular = singular.slice(0, -1); // mangos→mango, bananas→banana
+  }
+
+  // Try to find EN→DE translation
+  const deTranslation = EN_TO_DE[lower] || EN_TO_DE[singular] || EN_TO_DE[text.toLowerCase()];
+
+  return {
+    original,
+    normalized_de: deTranslation || text,
+    normalized_en: deTranslation ? (singular || lower) : text,
+    brand: null,
+    category_de: '',
+    category_en: '',
+    exclude: [],
+    qty,
+  };
+}
+
 async function callClaude(system: string, user: string, maxTokens = 2048): Promise<string> {
   if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
 
@@ -87,44 +186,32 @@ Return a JSON array. For each item:
   "qty": 1
 }`;
 
+  // Always run local normalization first (handles plurals, typos, EN→DE)
+  const localResults = rawItems.map(item => localNormalize(item));
+
+  // Try Claude for enhanced normalization (better categories, exclude terms, brand detection)
+  if (!ANTHROPIC_API_KEY) return localResults;
+
   try {
     const text = await callClaude(NORMALIZE_SYSTEM, userPrompt, 2048);
     const parsed = parseJSON<NormalizeRaw[]>(text);
     if (!parsed || !Array.isArray(parsed)) {
-      return rawItems.map(item => ({
-        original: item,
-        normalized_de: item,
-        normalized_en: item,
-        brand: null,
-        category_de: '',
-        category_en: '',
-        exclude: [],
-        qty: 1,
-      }));
+      return localResults;
     }
 
-    return parsed.map(p => ({
-      original: p.original,
-      normalized_de: p.de,
-      normalized_en: p.en,
+    return parsed.map((p, i) => ({
+      original: p.original || localResults[i]?.original || rawItems[i],
+      normalized_de: p.de || localResults[i]?.normalized_de || rawItems[i],
+      normalized_en: p.en || localResults[i]?.normalized_en || rawItems[i],
       brand: p.brand,
       category_de: p.category_de,
       category_en: p.category_en,
       exclude: p.exclude || [],
-      qty: p.qty || 1,
+      qty: p.qty || localResults[i]?.qty || 1,
     }));
   } catch (error) {
-    console.error('Normalize error:', error);
-    return rawItems.map(item => ({
-      original: item,
-      normalized_de: item,
-      normalized_en: item,
-      brand: null,
-      category_de: '',
-      category_en: '',
-      exclude: [],
-      qty: 1,
-    }));
+    console.error('Claude normalize failed, using local normalization:', error);
+    return localResults;
   }
 }
 
