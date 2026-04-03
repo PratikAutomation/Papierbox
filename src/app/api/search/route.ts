@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { Offer, SearchResult } from '@/lib/types';
+import { normalizeSingle } from '@/lib/claude-normalize';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const MAX_OFFERS = 8;
@@ -250,9 +251,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product parameter must be non-empty' }, { status: 400 });
     }
 
-    // STEP 1: Get candidates from database (broad search)
+    // STEP 1: Normalize query via Claude (fixes "Mangos" -> "Mango", typos, etc.)
+    let searchTerm = product;
+    let excludeTerms: string[] = [];
+    try {
+      const normalized = await normalizeSingle(product);
+      searchTerm = normalized.normalized_de || product;
+      excludeTerms = normalized.exclude || [];
+    } catch (error) {
+      console.error('Normalization failed, using raw query:', error);
+    }
+
+    // STEP 2: Get candidates from database (broad search)
     const { data: rpcData, error: rpcError } = await supabase.rpc('search_offers', {
-      search_query: product,
+      search_query: searchTerm,
       city_slug: city,
       result_limit: 150,
     });
@@ -266,10 +278,15 @@ export async function GET(request: NextRequest) {
       mapRowToOffer(row as Record<string, any>) // eslint-disable-line @typescript-eslint/no-explicit-any
     );
 
-    // STEP 2: PRECISE scoring — category-aware, word-boundary
+    // STEP 3: PRECISE scoring — category-aware, word-boundary + Claude exclusion filtering
     const scored = candidates
+      .filter(offer => {
+        if (excludeTerms.length === 0) return true;
+        const pName = norm(offer.productName || '').toLowerCase();
+        return !excludeTerms.some(ex => pName.includes(ex.toLowerCase()));
+      })
       .map(offer => ({ offer, score: scoreProduct(product, offer) }))
-      .filter(s => s.score >= 30) // Higher threshold — only genuinely relevant
+      .filter(s => s.score >= 30)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;
@@ -305,7 +322,6 @@ export async function GET(request: NextRequest) {
           bestPrice, worstPrice, savingsAmount,
           totalOffers: offers.length,
           totalRegular: regularPrices.length,
-          isSuggestion: aiAssisted && offers.length === 0,
         } as SearchResult,
         meta: { query: product, city, timestamp: new Date().toISOString(), aiAssisted },
       },
