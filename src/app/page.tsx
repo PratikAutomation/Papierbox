@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Offer, SearchResult, CompareResult, StoreRanking, StoreItemDetail } from "@/lib/types";
+import { Offer, SearchResult, CompareResult, StoreRanking } from "@/lib/types";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 

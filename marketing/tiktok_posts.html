@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierbox TikTok Posts</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #111; font-family: 'Plus Jakarta Sans', sans-serif; color: white; padding: 40px; }
+
+h1 { text-align: center; color: #22c55e; font-size: 28px; margin-bottom: 10px; }
+.instructions { text-align: center; color: #888; font-size: 14px; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+.post-section { margin-bottom: 80px; }
+.post-title { color: #22c55e; font-size: 20px; font-weight: 800; margin-bottom: 8px; padding-left: 10px; border-left: 4px solid #22c55e; }
+.post-caption { color: #666; font-size: 13px; margin-bottom: 30px; padding-left: 14px; }
+
+.slides { display: flex; gap: 20px; overflow-x: auto; padding: 10px 0 30px 0; }
+
+.slide {
+  width: 360px;
+  height: 640px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 30px;
+}
+
+.slide-number {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* === POST 1: Butter Preisvergleich === */
+.p1-s1 { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); }
+.p1-s2 { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); }
+.p1-s3 { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); }
+.p1-s4 { background: linear-gradient(135deg, #0a0a0a 0%, #0d2818 100%); }
+
+/* === POST 2: Biggest Discounts === */
+.p2-s1 { background: linear-gradient(135deg, #1a0a00 0%, #2d1810 100%); }
+.p2-s2 { background: linear-gradient(135deg, #1a0a00 0%, #2d1810 100%); }
+.p2-s3 { background: linear-gradient(135deg, #1a0a00 0%, #2d1810 100%); }
+.p2-s4 { background: linear-gradient(135deg, #0a0a0a 0%, #0d2818 100%); }
+
+/* === POST 3: Store Battle === */
+.p3-s1 { background: linear-gradient(135deg, #0a0015 0%, #1a0a30 100%); }
+.p3-s2 { background: linear-gradient(135deg, #0a0015 0%, #1a0a30 100%); }
+.p3-s3 { background: linear-gradient(135deg, #0a0015 0%, #1a0a30 100%); }
+.p3-s4 { background: linear-gradient(135deg, #0a0a0a 0%, #0d2818 100%); }
+
+.hook { font-size: 38px; font-weight: 900; line-height: 1.1; letter-spacing: -1px; }
+.hook em { font-style: normal; color: #22c55e; }
+.subhook { font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.6); margin-top: 16px; }
+
+.emoji-big { font-size: 64px; margin-bottom: 20px; }
+
+/* Price comparison cards */
+.price-card {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+.price-card.winner {
+  background: rgba(34,197,94,0.12);
+  border: 2px solid #22c55e;
+}
+.price-card .store { font-weight: 800; font-size: 16px; }
+.price-card .product { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.price-card .price { font-weight: 900; font-size: 24px; }
+.price-card .price.green { color: #22c55e; }
+.price-card .original { font-size: 13px; color: rgba(255,255,255,0.3); text-decoration: line-through; margin-top: 2px; }
+.price-card .badge {
+  background: #22c55e;
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 20px;
+  position: absolute;
+  top: -8px;
+  right: 16px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Discount badge */
+.discount-row {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.discount-row .left { text-align: left; }
+.discount-row .name { font-weight: 700; font-size: 14px; }
+.discount-row .store-tag { font-size: 11px; color: rgba(255,255,255,0.4); }
+.discount-row .pct {
+  font-weight: 900;
+  font-size: 22px;
+  color: #ef4444;
+}
+
+/* CTA slide */
+.cta-url {
+  font-size: 28px;
+  font-weight: 900;
+  color: #22c55e;
+  margin-top: 20px;
+  padding: 12px 30px;
+  border: 3px solid #22c55e;
+  border-radius: 50px;
+}
+.cta-sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+.cta-features { margin-top: 24px; text-align: left; }
+.cta-features div {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 10px;
+}
+.cta-features span { color: #22c55e; margin-right: 8px; }
+
+/* Logo */
+.logo-corner {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<h1>📱 Papierbox — TikTok Posts</h1>
+<p class="instructions">Screenshot each slide individually (1 slide = 1 photo in TikTok carousel).<br>
+Open this file in Chrome → zoom to fit each slide → screenshot → upload to TikTok as "Photo" mode.</p>
+
+<!-- ============================================ -->
+<!-- POST 1: BUTTER PREISVERGLEICH -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-title">POST 1: Butter Preisvergleich</div>
+  <div class="post-caption">
+    Caption: "Wo kaufst du deine Butter? 🧈 #einkaufen #sparen #deutschland #supermarkt #lidl #aldi #penny #kaufland #lebensmittel #preisvergleich"
+  </div>
+
+  <div class="slides">
+    <!-- Slide 1: Hook -->
+    <div class="slide p1-s1">
+      <div class="slide-number">1/4</div>
+      <div class="emoji-big">🧈</div>
+      <div class="hook">Wo ist Butter<br>am <em>günstigsten</em>?</div>
+      <div class="subhook">Diese Woche in Deutschland →</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 2: Price comparison -->
+    <div class="slide p1-s2">
+      <div class="slide-number">2/4</div>
+      <div class="section-title">🧈 Butter · Diese Woche</div>
+
+      <div class="price-card winner" style="position:relative;">
+        <div>
+          <div class="store">Kaufland</div>
+          <div class="product">WEIHENSTEPHAN Butter · 250g</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="price green">€1,29</div>
+          <div class="original">€2,89</div>
+        </div>
+        <div class="badge">GÜNSTIGSTER</div>
+      </div>
+
+      <div class="price-card">
+        <div>
+          <div class="store">Penny</div>
+          <div class="product">KERRYGOLD Butter · 250g</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="price">€1,69</div>
+          <div class="original">€3,49</div>
+        </div>
+      </div>
+
+      <div class="price-card">
+        <div>
+          <div class="store">Penny</div>
+          <div class="product">RAMA mit Butter · 225g</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="price">€1,29</div>
+          <div class="original">€1,79</div>
+        </div>
+      </div>
+
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 3: Savings highlight -->
+    <div class="slide p1-s3">
+      <div class="slide-number">3/4</div>
+      <div class="emoji-big">💰</div>
+      <div class="hook">Du sparst<br><em>€1,60</em></div>
+      <div class="subhook">pro Butter wenn du bei<br>Kaufland statt Penny kaufst</div>
+      <div style="margin-top: 30px; font-size: 48px; font-weight: 900; color: rgba(255,255,255,0.1);">-55%</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 4: CTA -->
+    <div class="slide p1-s4">
+      <div class="slide-number">4/4</div>
+      <div class="hook" style="font-size:26px;">Alle Preise.<br>Alle Supermärkte.<br><em>Eine Suche.</em></div>
+      <div class="cta-url">papierbox.eu</div>
+      <div class="cta-sub">100% kostenlos · Kein Login nötig</div>
+      <div class="cta-features">
+        <div><span>✓</span> Lidl, Aldi, Penny, Kaufland, Netto</div>
+        <div><span>✓</span> Aktuelle Wochenangebote</div>
+        <div><span>✓</span> Sofort den günstigsten Preis finden</div>
+      </div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- POST 2: KRASSESTE RABATTE -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-title">POST 2: Krasseste Rabatte diese Woche</div>
+  <div class="post-caption">
+    Caption: "Diese Deals sind KRANK 🤯🔥 Speicher dir das für deinen nächsten Einkauf! #angebote #rabatt #supermarkt #sparen #einkaufen #deutschland #lidl #kaufland #penny"
+  </div>
+
+  <div class="slides">
+    <!-- Slide 1: Hook -->
+    <div class="slide p2-s1">
+      <div class="slide-number">1/4</div>
+      <div class="emoji-big">🤯</div>
+      <div class="hook">Die <em>krassesten</em><br>Rabatte<br>diese Woche</div>
+      <div class="subhook">Bis zu 75% günstiger →</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 2: Top discounts -->
+    <div class="slide p2-s2">
+      <div class="slide-number">2/4</div>
+      <div class="section-title">🔥 Top Rabatte</div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">MILKA Schokolade</div>
+          <div class="store-tag">Kaufland · €0,77 statt €1,99</div>
+        </div>
+        <div class="pct">-61%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">MÜLLER Joghurt mit der Ecke</div>
+          <div class="store-tag">Penny · €0,33 statt €0,89</div>
+        </div>
+        <div class="pct">-63%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">LINDT Goldhase</div>
+          <div class="store-tag">Kaufland · €1,29 statt €3,29</div>
+        </div>
+        <div class="pct">-61%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">WEIHENSTEPHAN Butter</div>
+          <div class="store-tag">Kaufland · €1,29 statt €2,89</div>
+        </div>
+        <div class="pct">-55%</div>
+      </div>
+
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 3: More discounts -->
+    <div class="slide p2-s3">
+      <div class="slide-number">3/4</div>
+      <div class="section-title">🔥 Noch mehr Deals</div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">MELITTA Kaffee 500g</div>
+          <div class="store-tag">Penny · €5,99 statt €10,35</div>
+        </div>
+        <div class="pct">-42%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">ROTKÄPPCHEN Sekt</div>
+          <div class="store-tag">Penny · €2,99 statt €4,99</div>
+        </div>
+        <div class="pct">-40%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">DELVERDE Ital. Teigwaren</div>
+          <div class="store-tag">Kaufland · €0,77 statt €1,89</div>
+        </div>
+        <div class="pct">-59%</div>
+      </div>
+
+      <div class="discount-row">
+        <div class="left">
+          <div class="name">HASSERÖDER Premium Pils</div>
+          <div class="store-tag">Kaufland · €7,99 statt €17,99</div>
+        </div>
+        <div class="pct">-56%</div>
+      </div>
+
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 4: CTA -->
+    <div class="slide p2-s4">
+      <div class="slide-number">4/4</div>
+      <div class="hook" style="font-size:24px;">Jeden Montag &<br>Donnerstag<br><em>neue Deals</em></div>
+      <div class="cta-url">papierbox.eu</div>
+      <div class="cta-sub">Folge für wöchentliche Spar-Tipps 💰</div>
+      <div class="cta-features">
+        <div><span>🔍</span> Suche jedes Produkt</div>
+        <div><span>📍</span> Wähle deine Stadt</div>
+        <div><span>💸</span> Finde den günstigsten Preis</div>
+      </div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- POST 3: LIDL vs PENNY vs KAUFLAND -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-title">POST 3: Supermarkt-Battle — Wer ist günstiger?</div>
+  <div class="post-caption">
+    Caption: "Penny vs Kaufland — wer gewinnt? 🏆 Kommentiert euren Lieblings-Supermarkt! #lidl #aldi #penny #kaufland #netto #supermarkt #einkaufen #deutschland #sparen #preisvergleich"
+  </div>
+
+  <div class="slides">
+    <!-- Slide 1: Hook -->
+    <div class="slide p3-s1">
+      <div class="slide-number">1/4</div>
+      <div style="font-size: 48px; margin-bottom: 20px;">⚔️</div>
+      <div class="hook"><em>Penny</em><br>vs<br><em>Kaufland</em></div>
+      <div class="subhook">Wer hat die besseren Preise? →</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 2: Round 1 -->
+    <div class="slide p3-s2">
+      <div class="slide-number">2/4</div>
+      <div class="section-title">⚔️ Runde 1: Basics</div>
+
+      <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:12px;">
+        <div style="font-weight:900; color:#CD1719;">PENNY</div>
+        <div style="font-weight:700; color:rgba(255,255,255,0.3); font-size:13px;">PRODUKT</div>
+        <div style="font-weight:900; color:#E10915;">KAUFLAND</div>
+      </div>
+
+      <div style="width:100%; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 16px; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <div style="font-weight:900; color:#22c55e;">€1,69</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">🧈 Butter</div>
+        <div style="font-weight:900;">€1,29 🏆</div>
+      </div>
+
+      <div style="width:100%; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 16px; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <div style="font-weight:900;">€0,95 🏆</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">🥛 Milch 1L</div>
+        <div style="font-weight:900; color:#22c55e;">€0,95 🏆</div>
+      </div>
+
+      <div style="width:100%; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 16px; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <div style="font-weight:900; color:#22c55e;">€5,99 🏆</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">☕ Kaffee 500g</div>
+        <div style="font-weight:900;">—</div>
+      </div>
+
+      <div style="width:100%; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 16px; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <div style="font-weight:900;">€1,11</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">🧀 Frischkäse</div>
+        <div style="font-weight:900; color:#22c55e;">€0,99 🏆</div>
+      </div>
+
+      <div style="width:100%; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 16px; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <div style="font-weight:900;">—</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">🍫 Schokolade</div>
+        <div style="font-weight:900; color:#22c55e;">€0,77 🏆</div>
+      </div>
+
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 3: Winner -->
+    <div class="slide p3-s3">
+      <div class="slide-number">3/4</div>
+      <div style="font-size: 64px; margin-bottom: 16px;">🏆</div>
+      <div class="hook" style="font-size: 28px;">Gewinner diese Woche:</div>
+      <div style="font-size: 48px; font-weight: 900; color: #E10915; margin-top: 16px;">KAUFLAND</div>
+      <div style="font-size: 16px; color: rgba(255,255,255,0.5); margin-top: 12px;">3 von 5 Produkten günstiger</div>
+      <div style="margin-top: 30px; font-size: 15px; color: rgba(255,255,255,0.4);">Aber Penny gewinnt beim Kaffee ☕</div>
+      <div style="margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.3);">Es kommt drauf an was du kaufst! →</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+
+    <!-- Slide 4: CTA -->
+    <div class="slide p3-s4">
+      <div class="slide-number">4/4</div>
+      <div class="hook" style="font-size:22px;">Vergleiche <em>alle</em><br>Supermärkte in<br><em>5 Sekunden</em></div>
+      <div class="cta-url">papierbox.eu</div>
+      <div class="cta-sub">Kostenlos · Kein Login · Kein Bullsh*t</div>
+      <div style="margin-top: 28px; font-size: 18px; font-weight: 800; color: rgba(255,255,255,0.6);">
+        Welcher Supermarkt ist<br>DEIN Favorit? 👇
+      </div>
+      <div style="margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.3);">Kommentiere & folge für mehr Vergleiche</div>
+      <div class="logo-corner">PAPIERBOX</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center; color:#333; padding: 40px; font-size: 13px;">
+  <p>HOW TO USE: Open in Chrome → Right-click each slide → "Inspect" → Device toolbar (phone icon) → Set to 1080x1920 → Screenshot each slide</p>
+  <p style="margin-top:8px;">Or simply zoom your browser so one slide fills your screen, then screenshot with Windows+Shift+S</p>
+</div>
+
+</body>
+</html>

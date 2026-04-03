@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierbox — Smart Basket Feature Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Bricolage+Grotesque:wght@700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #22c55e;
+    --primary-dark: #006e2f;
+    --on-primary: #ffffff;
+    --outline: #1a1c1c;
+    --on-surface: #1a1c1c;
+    --on-surface-variant: #3d4a3d;
+    --surface: #f9f9f9;
+    --tertiary-fixed: #ffdf9f;
+    --on-tertiary-fixed: #261a00;
+    --shadow-neo: 4px 4px 0px 0px #1a1c1c;
+    --shadow-neo-hover: 2px 2px 0px 0px #1a1c1c;
+    --font-headline: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--on-surface);
+    background: var(--surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: white;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+
+  /* ===== DEMO CONTROLS ===== */
+  .demo-controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #1a1c1c;
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-family: var(--font-headline);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .demo-controls span { opacity: 0.5; }
+  .demo-btn {
+    background: var(--primary);
+    color: white;
+    border: 2px solid white;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: var(--font-headline);
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .demo-btn:hover { transform: scale(1.05); }
+  .demo-btn.active { background: white; color: #1a1c1c; }
+
+  /* ===== MAIN LAYOUT ===== */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+  }
+
+  /* ===== TAB TOGGLE ===== */
+  .tab-toggle {
+    display: flex;
+    background: white;
+    border: 3px solid var(--outline);
+    border-radius: 2rem;
+    padding: 4px;
+    box-shadow: var(--shadow-neo-hover);
+    margin-bottom: 32px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 1.6rem;
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--on-surface-variant);
+  }
+  .tab-btn.active {
+    background: var(--on-surface);
+    color: white;
+    box-shadow: var(--shadow-neo-hover);
+    transform: scale(1.02);
+  }
+  .tab-btn:not(.active):hover {
+    background: #f0f0f0;
+  }
+  .tab-btn .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  /* ===== SEARCH MODE (existing - simplified) ===== */
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  .existing-search-placeholder {
+    text-align: center;
+    padding: 40px;
+    color: var(--on-surface-variant);
+    font-weight: 600;
+    font-size: 15px;
+    border: 2px dashed #ccc;
+    border-radius: 2rem;
+    opacity: 0.5;
+  }
+
+  /* ===== LIST INPUT AREA ===== */
+  .list-input-container {
+    background: white;
+    border: 4px solid var(--outline);
+    border-radius: 2.5rem;
+    padding: 8px;
+    box-shadow: var(--shadow-neo);
+    margin-bottom: 24px;
+  }
+
+  .list-input-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .textarea-wrap {
+    position: relative;
+  }
+  .textarea-wrap .material-symbols-outlined {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    color: var(--on-surface-variant);
+    font-size: 24px;
+    opacity: 0.5;
+  }
+  .list-textarea {
+    width: 100%;
+    min-height: 180px;
+    padding: 20px 20px 20px 60px;
+    border: none;
+    border-radius: 2rem 2rem 0 0;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--on-surface);
+    resize: vertical;
+    outline: none;
+    line-height: 1.8;
+  }
+  .list-textarea::placeholder {
+    color: #bbb;
+    font-weight: 500;
+  }
+
+  .list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 2px solid rgba(26,28,28,0.05);
+  }
+
+  .list-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .item-count {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    background: #f3f3f3;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+  .item-count strong {
+    color: var(--primary-dark);
+  }
+
+  .upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--outline);
+    background: white;
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-neo-hover);
+    color: var(--on-surface);
+  }
+  .upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neo);
+  }
+  .upload-btn .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary-dark);
+  }
+
+  /* City + GO row */
+  .city-go-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 8px 8px;
+  }
+  .city-select-wrap {
+    flex: 1;
+    position: relative;
+  }
+  .city-select-wrap .material-symbols-outlined {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--on-surface-variant);
+    font-size: 22px;
+  }
+  .city-select {
+    width: 100%;
+    padding: 18px 20px 18px 54px;
+    border: 2px solid rgba(26,28,28,0.1);
+    border-radius: 2rem;
+    font-family: var(--font-headline);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--on-surface);
+    background: #fafafa;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .city-select:focus { border-color: var(--primary); }
+
+  .go-btn {
+    padding: 18px 36px;
+    border-radius: 2rem;
+    border: 2px solid var(--outline);
+    background: var(--primary);
+    color: white;
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-neo);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+  }
+  .go-btn:hover {
+    transform: scale(1.02);
+  }
+  .go-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #1a1c1c;
+  }
+
+  /* ===== PHOTO UPLOAD OVERLAY ===== */
+  .upload-zone {
+    display: none;
+    border: 3px dashed var(--primary);
+    border-radius: 2rem;
+    padding: 40px;
+    text-align: center;
+    background: rgba(34,197,94,0.03);
+    margin-bottom: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upload-zone.active { display: block; }
+  .upload-zone:hover {
+    background: rgba(34,197,94,0.08);
+    border-color: var(--primary-dark);
+  }
+  .upload-zone .material-symbols-outlined {
+    font-size: 48px;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  .upload-zone h3 {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .upload-zone p {
+    color: var(--on-surface-variant);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .upload-zone .formats {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .upload-zone .format-tag {
+    background: white;
+    border: 2px solid var(--outline);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* ===== LOADING STATE ===== */
+  .loading-state {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .loading-state.active { display: block; }
+  .loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #e8e8e8;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state h3 {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .loading-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    text-align: left;
+  }
+  .loading-step.done { color: var(--primary-dark); }
+  .loading-step .material-symbols-outlined { font-size: 18px; }
+  .loading-step.done .material-symbols-outlined { color: var(--primary); }
+
+  /* ===== CELEBRATION POPUP ===== */
+  .celebration-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .celebration-overlay.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .celebration-card {
+    background: white;
+    border: 4px solid var(--outline);
+    border-radius: 2.5rem;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 8px 8px 0px 0px #1a1c1c;
+    position: relative;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .celebration-confetti {
+    font-size: 40px;
+    margin-bottom: 16px;
+    animation: confettiBounce 0.6s ease infinite alternate;
+  }
+  @keyframes confettiBounce {
+    from { transform: translateY(0) rotate(-3deg); }
+    to { transform: translateY(-8px) rotate(3deg); }
+  }
+
+  .celebration-store-name {
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 48px;
+    letter-spacing: -2px;
+    color: var(--on-surface);
+    margin-bottom: 4px;
+  }
+  .celebration-label {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--primary-dark);
+    margin-bottom: 20px;
+  }
+
+  .celebration-price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    background: var(--primary);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 32px;
+    border: 3px solid var(--outline);
+    box-shadow: var(--shadow-neo-hover);
+    margin-bottom: 16px;
+  }
+  .celebration-price .currency { font-size: 22px; }
+
+  .celebration-savings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 15px;
+    border: 2px solid #f59e0b;
+    margin-bottom: 24px;
+  }
+
+  .celebration-meta {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .celebration-meta strong { color: var(--primary-dark); }
+
+  .celebration-cta {
+    padding: 16px 32px;
+    border-radius: 999px;
+    border: 2px solid var(--outline);
+    background: var(--on-surface);
+    color: white;
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow-neo-hover);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .celebration-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neo);
+  }
+
+  .celebration-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--on-surface-variant);
+    padding: 4px;
+  }
+
+  /* ===== STORE RANKING ===== */
+  .results-section {
+    display: none;
+    margin-top: 16px;
+  }
+  .results-section.active { display: block; }
+
+  .results-summary {
+    background: white;
+    border: 4px solid var(--outline);
+    border-radius: 2.5rem;
+    padding: 32px;
+    box-shadow: var(--shadow-neo);
+    margin-bottom: 24px;
+  }
+  .results-summary h2 {
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+  .results-summary .subtitle {
+    color: var(--on-surface-variant);
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .results-summary .subtitle .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: pulse 1.5s infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Store ranking cards */
+  .store-ranking {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .store-rank-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: white;
+    border: 2px solid rgba(26,28,28,0.1);
+    border-radius: 2rem;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .store-rank-card:hover {
+    border-color: var(--outline);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neo-hover);
+  }
+  .store-rank-card.winner {
+    border: 4px solid var(--outline);
+    box-shadow: var(--shadow-neo);
+    background: white;
+  }
+
+  .rank-badge {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: #fef3c7; border: 2px solid #f59e0b; }
+  .rank-2 { background: #f1f5f9; border: 2px solid #94a3b8; }
+  .rank-3 { background: #fed7aa; border: 2px solid #f97316; }
+  .rank-other { background: #f3f3f3; border: 2px solid #e2e2e2; color: var(--on-surface-variant); font-family: var(--font-headline); }
+
+  .store-rank-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .store-rank-name {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 18px;
+  }
+  .store-rank-offers {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+
+  .store-rank-bar-wrap {
+    flex: 1;
+    min-width: 0;
+    display: none;
+  }
+  @media (min-width: 640px) {
+    .store-rank-bar-wrap { display: block; }
+  }
+  .store-rank-bar {
+    height: 10px;
+    border-radius: 999px;
+    background: #e8e8e8;
+    overflow: hidden;
+  }
+  .store-rank-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 1s ease;
+  }
+
+  .store-rank-price {
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 24px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .store-rank-card.winner .store-rank-price { color: var(--primary-dark); }
+
+  .winner-tag {
+    background: var(--primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid var(--outline);
+  }
+
+  /* ===== ITEM BREAKDOWN ===== */
+  .breakdown-section {
+    background: white;
+    border: 4px solid var(--outline);
+    border-radius: 2.5rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-neo);
+    margin-bottom: 32px;
+  }
+  .breakdown-header {
+    padding: 24px 28px;
+    border-bottom: 3px solid var(--outline);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .breakdown-header h3 {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .breakdown-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .legend-dot.offer { background: var(--primary); }
+  .legend-dot.estimate { background: #d1d5db; }
+
+  .breakdown-list { list-style: none; }
+  .breakdown-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(26,28,28,0.06);
+    gap: 16px;
+    transition: background 0.15s;
+  }
+  .breakdown-item:hover { background: #fafafa; }
+  .breakdown-item:last-child { border-bottom: none; }
+
+  .item-status {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .item-status {
+    background: rgba(34,197,94,0.15);
+    color: var(--primary-dark);
+  }
+  .item-status .material-symbols-outlined { font-size: 18px; }
+
+  .item-details {
+    flex: 1;
+    min-width: 0;
+  }
+  .item-name {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .item-meta {
+    font-size: 12px;
+    color: var(--on-surface-variant);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .item-offer-tag {
+    background: var(--primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--outline);
+  }
+
+  .item-prices {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .item-price {
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 18px;
+  }
+  /* All prices same color — no visual downgrading */
+  .item-original-price {
+    font-size: 12px;
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-weight: 600;
+  }
+  .item-saving {
+    font-size: 11px;
+    color: var(--primary-dark);
+    font-weight: 800;
+  }
+
+  /* Divider between offers and estimates */
+  .breakdown-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 28px;
+    background: #fafafa;
+  }
+  .breakdown-divider hr {
+    flex: 1;
+    border: none;
+    border-top: 2px dashed rgba(26,28,28,0.1);
+  }
+  .breakdown-divider span {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--on-surface-variant);
+    white-space: nowrap;
+  }
+
+  /* Total row */
+  .breakdown-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    background: var(--on-surface);
+    color: white;
+  }
+  .breakdown-total-label {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 18px;
+  }
+  .breakdown-total-price {
+    font-family: var(--font-headline);
+    font-weight: 900;
+    font-size: 28px;
+  }
+  .breakdown-total-detail {
+    font-size: 12px;
+    opacity: 0.6;
+    font-weight: 600;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .celebration-card { padding: 32px 24px; border-radius: 2rem; }
+    .celebration-store-name { font-size: 36px; }
+    .celebration-price { font-size: 26px; padding: 10px 24px; }
+    .list-actions { flex-direction: column; gap: 10px; }
+    .city-go-row { flex-direction: column; }
+    .go-btn { justify-content: center; }
+    .results-summary { padding: 24px; }
+    .results-summary h2 { font-size: 22px; }
+    .store-rank-card { padding: 16px; }
+    .store-rank-price { font-size: 20px; }
+    .breakdown-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .tab-toggle { max-width: 100%; }
+    .tab-btn { font-size: 13px; padding: 12px 14px; }
+    .breakdown-item { padding: 12px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- DEMO CONTROLS -->
+<div class="demo-controls">
+  <span>VIEW:</span>
+  <button class="demo-btn active" onclick="showState('input')">Input</button>
+  <button class="demo-btn" onclick="showState('upload')">Photo Upload</button>
+  <button class="demo-btn" onclick="showState('loading')">Loading</button>
+  <button class="demo-btn" onclick="showState('results')">Results</button>
+</div>
+
+<main>
+
+  <!-- TAB TOGGLE -->
+  <div class="tab-toggle">
+    <button class="tab-btn" onclick="switchTab(this, 'search')">
+      <span class="material-symbols-outlined">search</span>
+      Search a product
+    </button>
+    <button class="tab-btn active" onclick="switchTab(this, 'list')">
+      <span class="material-symbols-outlined">shopping_cart</span>
+      Compare my list
+    </button>
+  </div>
+
+  <!-- MODE: SEARCH (existing - just a placeholder here) -->
+  <div id="mode-search" class="mode-panel">
+    <div class="existing-search-placeholder">
+      Your existing search bar lives here — no changes needed
+    </div>
+  </div>
+
+  <!-- MODE: LIST COMPARISON -->
+  <div id="mode-list" class="mode-panel active">
+
+    <!-- INPUT STATE -->
+    <div id="state-input">
+      <div class="list-input-container">
+        <div class="list-input-inner">
+          <div class="textarea-wrap">
+            <span class="material-symbols-outlined">format_list_bulleted</span>
+            <textarea class="list-textarea" placeholder="Type your grocery list here...&#10;&#10;Example:&#10;Milk&#10;2x Butter&#10;Eggs&#10;Chicken breast&#10;Mangos&#10;Coffee&#10;Pasta&#10;Tomatoes" oninput="updateCount(this)">Milk
+2x Butter
+Eggs
+Chicken breast
+Mango
+Coffee
+Pasta
+Tomatoes
+Rice
+Bananas
+Yogurt
+Olive oil</textarea>
+          </div>
+          <div class="list-actions">
+            <div class="list-actions-left">
+              <div class="item-count"><strong id="item-count-num">12</strong> items</div>
+              <button class="upload-btn" onclick="toggleUpload()">
+                <span class="material-symbols-outlined">photo_camera</span>
+                Upload Photo
+              </button>
+            </div>
+          </div>
+          <div class="city-go-row">
+            <div class="city-select-wrap">
+              <span class="material-symbols-outlined">location_on</span>
+              <select class="city-select">
+                <option value="">Where you at?</option>
+                <option value="hamburg" selected>Hamburg</option>
+                <option value="berlin">Berlin</option>
+                <option value="munich">Munich</option>
+                <option value="cologne">Cologne</option>
+                <option value="frankfurt">Frankfurt</option>
+              </select>
+            </div>
+            <button class="go-btn" onclick="showState('loading')">
+              FIND BEST STORE
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD ZONE (toggle) -->
+      <div id="upload-zone" class="upload-zone">
+        <span class="material-symbols-outlined">add_a_photo</span>
+        <h3>Drop your shopping list photo here</h3>
+        <p>Handwritten notes, WhatsApp screenshots, Notes app — we read it all</p>
+        <div class="formats">
+          <span class="format-tag">JPG</span>
+          <span class="format-tag">PNG</span>
+          <span class="format-tag">HEIC</span>
+          <span class="format-tag">Screenshot</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div id="state-loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <h3>Crunching numbers across 5 stores...</h3>
+      <p style="color: var(--on-surface-variant); font-weight: 600; font-size: 14px;">This takes ~5 seconds</p>
+      <div class="loading-steps">
+        <div class="loading-step done">
+          <span class="material-symbols-outlined">check_circle</span>
+          Parsed 12 items from your list
+        </div>
+        <div class="loading-step done">
+          <span class="material-symbols-outlined">check_circle</span>
+          Searching offers at 5 stores
+        </div>
+        <div class="loading-step">
+          <span class="material-symbols-outlined">pending</span>
+          Estimating prices for 7 items...
+        </div>
+        <div class="loading-step">
+          <span class="material-symbols-outlined">pending</span>
+          Calculating best store
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS STATE -->
+    <div id="state-results" class="results-section">
+
+      <!-- Summary bar -->
+      <div class="results-summary">
+        <h2>Your Grocery List in Hamburg</h2>
+        <div class="subtitle">
+          <span class="dot"></span>
+          12 items compared across 5 stores — 5 real offers found
+        </div>
+      </div>
+
+      <!-- Store Ranking -->
+      <div class="store-ranking">
+        <!-- #1 WINNER -->
+        <div class="store-rank-card winner" onclick="showCelebration()">
+          <div class="rank-badge rank-1">&#129351;</div>
+          <div class="store-rank-info">
+            <div class="store-rank-name">Penny <span class="winner-tag">BEST PICK</span></div>
+            <div class="store-rank-offers">4 items on sale this week</div>
+          </div>
+          <div class="store-rank-bar-wrap">
+            <div class="store-rank-bar">
+              <div class="store-rank-bar-fill" style="width: 100%; background: var(--primary);"></div>
+            </div>
+          </div>
+          <div class="store-rank-price">&#8364;24.30</div>
+        </div>
+        <!-- #2 -->
+        <div class="store-rank-card">
+          <div class="rank-badge rank-2">&#129352;</div>
+          <div class="store-rank-info">
+            <div class="store-rank-name">Lidl</div>
+            <div class="store-rank-offers">3 items on sale</div>
+          </div>
+          <div class="store-rank-bar-wrap">
+            <div class="store-rank-bar">
+              <div class="store-rank-bar-fill" style="width: 85%; background: #94a3b8;"></div>
+            </div>
+          </div>
+          <div class="store-rank-price">&#8364;25.80</div>
+        </div>
+        <!-- #3 -->
+        <div class="store-rank-card">
+          <div class="rank-badge rank-3">&#129353;</div>
+          <div class="store-rank-info">
+            <div class="store-rank-name">Aldi S&uuml;d</div>
+            <div class="store-rank-offers">2 items on sale</div>
+          </div>
+          <div class="store-rank-bar-wrap">
+            <div class="store-rank-bar">
+              <div class="store-rank-bar-fill" style="width: 72%; background: #f97316;"></div>
+            </div>
+          </div>
+          <div class="store-rank-price">&#8364;26.40</div>
+        </div>
+        <!-- #4 -->
+        <div class="store-rank-card">
+          <div class="rank-badge rank-other">4</div>
+          <div class="store-rank-info">
+            <div class="store-rank-name">Netto</div>
+            <div class="store-rank-offers">2 items on sale</div>
+          </div>
+          <div class="store-rank-bar-wrap">
+            <div class="store-rank-bar">
+              <div class="store-rank-bar-fill" style="width: 60%; background: #d1d5db;"></div>
+            </div>
+          </div>
+          <div class="store-rank-price">&#8364;27.90</div>
+        </div>
+        <!-- #5 -->
+        <div class="store-rank-card">
+          <div class="rank-badge rank-other">5</div>
+          <div class="store-rank-info">
+            <div class="store-rank-name">Kaufland</div>
+            <div class="store-rank-offers">1 item on sale</div>
+          </div>
+          <div class="store-rank-bar-wrap">
+            <div class="store-rank-bar">
+              <div class="store-rank-bar-fill" style="width: 45%; background: #d1d5db;"></div>
+            </div>
+          </div>
+          <div class="store-rank-price">&#8364;30.50</div>
+        </div>
+      </div>
+
+      <!-- Item Breakdown -->
+      <div class="breakdown-section">
+        <div class="breakdown-header">
+          <h3>
+            <span class="material-symbols-outlined" style="color: var(--primary);">receipt_long</span>
+            Item breakdown at Penny
+          </h3>
+          <div class="breakdown-legend">
+            12 items
+          </div>
+        </div>
+
+        <ul class="breakdown-list">
+          <!-- REAL OFFERS -->
+          <li class="breakdown-item">
+            <div class="item-status offer">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Butter (Deutsche Markenbutter)</div>
+              <div class="item-meta">250g &middot; Valid until SAT</div>
+            </div>
+            <span class="item-offer-tag">ON SALE</span>
+            <div class="item-prices">
+              <div class="item-original-price">&euro;2.29</div>
+              <div class="item-price offer-price">&euro;1.49</div>
+              <div class="item-saving">save &euro;1.60</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status offer">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Mango</div>
+              <div class="item-meta">per piece &middot; Valid until SAT</div>
+            </div>
+            <span class="item-offer-tag">ON SALE</span>
+            <div class="item-prices">
+              <div class="item-original-price">&euro;1.29</div>
+              <div class="item-price offer-price">&euro;0.69</div>
+              <div class="item-saving">save &euro;0.60</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status offer">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Melitta Kaffee</div>
+              <div class="item-meta">500g &middot; Valid until SAT</div>
+            </div>
+            <span class="item-offer-tag">ON SALE</span>
+            <div class="item-prices">
+              <div class="item-original-price">&euro;6.49</div>
+              <div class="item-price offer-price">&euro;3.99</div>
+              <div class="item-saving">save &euro;2.50</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status offer">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">H&auml;hnchenbrust</div>
+              <div class="item-meta">400g &middot; Valid until SAT</div>
+            </div>
+            <span class="item-offer-tag">ON SALE</span>
+            <div class="item-prices">
+              <div class="item-price offer-price">&euro;3.99</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status offer">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Barilla Pasta</div>
+              <div class="item-meta">500g &middot; Valid until SAT</div>
+            </div>
+            <span class="item-offer-tag">ON SALE</span>
+            <div class="item-prices">
+              <div class="item-original-price">&euro;1.49</div>
+              <div class="item-price offer-price">&euro;0.75</div>
+              <div class="item-saving">save &euro;0.74</div>
+            </div>
+          </li>
+        </ul>
+
+        <!-- DIVIDER -->
+        <div class="breakdown-divider">
+          <hr>
+          <span>Typical prices</span>
+          <hr>
+        </div>
+
+        <ul class="breakdown-list">
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Vollmilch 3.5%</div>
+              <div class="item-meta">1L</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;1.09</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Eier (10er)</div>
+              <div class="item-meta">10 St&uuml;ck</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;2.49</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Langkorn Reis</div>
+              <div class="item-meta">500g</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;1.79</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Tomaten</div>
+              <div class="item-meta">500g</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;1.69</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Bananen</div>
+              <div class="item-meta">1kg</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;1.49</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Joghurt Natur</div>
+              <div class="item-meta">500g</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;0.79</div>
+            </div>
+          </li>
+          <li class="breakdown-item">
+            <div class="item-status">
+              <span class="material-symbols-outlined">shopping_basket</span>
+            </div>
+            <div class="item-details">
+              <div class="item-name">Oliven&ouml;l</div>
+              <div class="item-meta">500ml</div>
+            </div>
+            <div class="item-prices">
+              <div class="item-price">&euro;4.99</div>
+            </div>
+          </li>
+        </ul>
+
+        <!-- TOTAL -->
+        <div class="breakdown-total">
+          <div>
+            <div class="breakdown-total-label">TOTAL AT PENNY</div>
+            <div class="breakdown-total-detail">12 items</div>
+          </div>
+          <div class="breakdown-total-price">&euro;24.30</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- CELEBRATION POPUP -->
+<div id="celebration" class="celebration-overlay" onclick="closeCelebration(event)">
+  <div class="celebration-card" onclick="event.stopPropagation()">
+    <button class="celebration-close" onclick="closeCelebration()">&times;</button>
+    <div class="celebration-confetti">&#127881; &#127882; &#10024;</div>
+    <div class="celebration-label">THIS WEEK, GO TO</div>
+    <div class="celebration-store-name">PENNY</div>
+    <div style="margin-bottom: 20px;">
+      <div class="celebration-price">
+        <span class="currency">&euro;</span>24.30
+      </div>
+    </div>
+    <div class="celebration-savings">
+      <span class="material-symbols-outlined" style="font-size: 18px;">savings</span>
+      You save &euro;6.20 vs Kaufland (&euro;30.50)
+    </div>
+    <div class="celebration-meta">
+      <strong>5 items</strong> from your list are on sale at Penny this week<br>
+      <strong>7 items</strong> at typical everyday prices
+    </div>
+    <button class="celebration-cta" onclick="closeCelebration()">
+      SEE FULL BREAKDOWN
+      <span class="material-symbols-outlined" style="font-size: 18px;">arrow_downward</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  function switchTab(btn, mode) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('mode-' + mode).classList.add('active');
+  }
+
+  function updateCount(textarea) {
+    const lines = textarea.value.split('\n').filter(l => l.trim().length > 0);
+    document.getElementById('item-count-num').textContent = lines.length;
+  }
+
+  function toggleUpload() {
+    document.getElementById('upload-zone').classList.toggle('active');
+  }
+
+  function showState(state) {
+    // Update demo buttons
+    document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Hide all states
+    document.getElementById('state-input').style.display = 'none';
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('state-results').style.display = 'none';
+    document.getElementById('upload-zone').classList.remove('active');
+
+    if (state === 'input') {
+      document.getElementById('state-input').style.display = 'block';
+    } else if (state === 'upload') {
+      document.getElementById('state-input').style.display = 'block';
+      document.getElementById('upload-zone').classList.add('active');
+    } else if (state === 'loading') {
+      document.getElementById('state-loading').style.display = 'block';
+      document.getElementById('state-loading').classList.add('active');
+    } else if (state === 'results') {
+      document.getElementById('state-results').style.display = 'block';
+      document.getElementById('state-results').classList.add('active');
+      setTimeout(() => showCelebration(), 500);
+    }
+  }
+
+  function showCelebration() {
+    document.getElementById('celebration').classList.add('active');
+  }
+
+  function closeCelebration(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('celebration').classList.remove('active');
+  }
+</script>
+
+</body>
+</html>

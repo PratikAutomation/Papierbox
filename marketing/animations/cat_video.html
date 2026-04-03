@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    width: 1080px; height: 1920px;
+    overflow: hidden; position: relative;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #FAFAFA;
+}
+
+/* ============================================ */
+/* SCENE CONTAINERS                             */
+/* ============================================ */
+.scene {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center; padding: 80px 70px;
+    opacity: 0;
+}
+
+/* Scene timings: total 22 seconds */
+/* Scene 1: 0-5.5s, Scene 2: 5.5-11s, Scene 3: 11-16.5s, Scene 4: 16.5-22s */
+
+.scene1 { animation: scene1 22s ease-in-out forwards; }
+@keyframes scene1 {
+    0% { opacity: 0; }
+    1% { opacity: 1; }
+    23% { opacity: 1; }
+    25% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.scene2 { animation: scene2 22s ease-in-out forwards; }
+@keyframes scene2 {
+    0%, 24% { opacity: 0; }
+    26% { opacity: 1; }
+    48% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.scene3 { animation: scene3 22s ease-in-out forwards; }
+@keyframes scene3 {
+    0%, 49% { opacity: 0; }
+    51% { opacity: 1; }
+    73% { opacity: 1; }
+    75% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.scene4 { animation: scene4 22s ease-in-out forwards; }
+@keyframes scene4 {
+    0%, 74% { opacity: 0; }
+    76% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+/* ============================================ */
+/* SCENE 1: Confused Cat in Supermarket         */
+/* ============================================ */
+.scene1 {
+    background: linear-gradient(180deg, #FAFAFA 0%, #f0f0f0 100%);
+}
+
+.cat-confused {
+    font-size: 280px;
+    animation: catWobble 1.5s ease-in-out infinite;
+}
+@keyframes catWobble {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.scene1 .label {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    background: #1a1c1c; color: white; font-size: 36px; font-weight: 900;
+    padding: 16px 44px; border-radius: 50px;
+    animation: fadeSlideDown 0.8s 0.5s ease-out both;
+}
+
+.speech-bubble {
+    background: white; border: 5px solid #1a1c1c; border-radius: 40px;
+    padding: 40px 50px; margin-top: 40px; position: relative;
+    box-shadow: 6px 6px 0px rgba(26,28,28,0.15);
+    max-width: 90%;
+}
+.speech-bubble::after {
+    content: ''; position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+    border-left: 25px solid transparent; border-right: 25px solid transparent;
+    border-bottom: 30px solid #1a1c1c;
+}
+.speech-bubble::before {
+    content: ''; position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    border-left: 22px solid transparent; border-right: 22px solid transparent;
+    border-bottom: 27px solid white; z-index: 1;
+}
+
+.speech-text {
+    font-size: 40px; font-weight: 700; color: #1a1c1c; line-height: 1.5;
+}
+.speech-text em { font-style: normal; color: #dc2626; font-weight: 900; }
+
+.scene1 .thought-dots {
+    position: absolute; top: 340px; right: 160px;
+    animation: dotsFloat 2s ease-in-out infinite;
+}
+.scene1 .thought-dots span {
+    display: inline-block; width: 20px; height: 20px;
+    background: #1a1c1c; border-radius: 50%; margin: 0 6px;
+    opacity: 0.3;
+}
+@keyframes dotsFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Question marks floating */
+.qmarks {
+    position: absolute; width: 100%; height: 100%; pointer-events: none;
+}
+.qmarks span {
+    position: absolute; font-size: 60px; font-weight: 900; color: rgba(26,28,28,0.06);
+}
+.qmarks span:nth-child(1) { top: 15%; left: 10%; animation: floatQ 3s ease-in-out infinite; }
+.qmarks span:nth-child(2) { top: 25%; right: 12%; animation: floatQ 2.5s 0.5s ease-in-out infinite; }
+.qmarks span:nth-child(3) { top: 8%; right: 30%; animation: floatQ 3.5s 1s ease-in-out infinite; }
+.qmarks span:nth-child(4) { bottom: 20%; left: 15%; animation: floatQ 2.8s 0.3s ease-in-out infinite; }
+.qmarks span:nth-child(5) { bottom: 12%; right: 8%; animation: floatQ 3.2s 0.8s ease-in-out infinite; }
+@keyframes floatQ {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.06; }
+    50% { transform: translateY(-20px) rotate(10deg); opacity: 0.12; }
+}
+
+/* ============================================ */
+/* SCENE 2: Frustrated Cat Checking Websites    */
+/* ============================================ */
+.scene2 {
+    background: #FAFAFA;
+}
+
+.cat-angry {
+    font-size: 220px;
+    animation: catShake 0.5s ease-in-out infinite;
+}
+@keyframes catShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.scene2 .label {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    background: #dc2626; color: white; font-size: 36px; font-weight: 900;
+    padding: 16px 44px; border-radius: 50px;
+}
+
+.website-list {
+    margin-top: 40px; text-align: left; width: 85%;
+}
+.website-item {
+    background: white; border: 4px solid #1a1c1c; border-radius: 24px;
+    padding: 28px 36px; margin-bottom: 16px;
+    box-shadow: 4px 4px 0px rgba(26,28,28,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+    animation: slideInItem 0.6s ease-out both;
+}
+.website-item:nth-child(1) { animation-delay: 0.3s; }
+.website-item:nth-child(2) { animation-delay: 0.6s; }
+.website-item:nth-child(3) { animation-delay: 0.9s; }
+.website-item:nth-child(4) { animation-delay: 1.2s; }
+.website-item:nth-child(5) { animation-delay: 1.5s; }
+
+@keyframes slideInItem {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.website-item .name { font-size: 40px; font-weight: 800; }
+.website-item .status { font-size: 32px; font-weight: 900; color: #dc2626; }
+
+/* Loading spinner */
+.loading-dots {
+    display: inline-block;
+    animation: loadingPulse 1s ease-in-out infinite;
+}
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* ============================================ */
+/* SCENE 3: Cat Discovers Papierbox             */
+/* ============================================ */
+.scene3 {
+    background: #FAFAFA;
+}
+
+.cat-excited {
+    font-size: 220px;
+    animation: catBounce 0.6s ease-in-out infinite;
+}
+@keyframes catBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.1); }
+}
+
+.scene3 .label {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    background: #22c55e; color: white; font-size: 36px; font-weight: 900;
+    padding: 16px 44px; border-radius: 50px;
+    animation: pulseGreen 1s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+}
+
+.discovery-bubble {
+    background: #22c55e; border: 5px solid #1a1c1c; border-radius: 40px;
+    padding: 40px 50px; margin-top: 30px;
+    box-shadow: 8px 8px 0px rgba(26,28,28,0.2);
+    max-width: 90%;
+    animation: popIn 0.5s 0.5s ease-out both;
+}
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+.discovery-bubble .text {
+    font-size: 40px; font-weight: 800; color: white; line-height: 1.5;
+}
+.discovery-bubble .text em { font-style: normal; color: #1a1c1c; font-weight: 900; }
+
+/* Sparkles */
+.sparkles {
+    position: absolute; width: 100%; height: 100%; pointer-events: none;
+}
+.sparkles span {
+    position: absolute; font-size: 50px;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+.sparkles span:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+.sparkles span:nth-child(2) { top: 18%; right: 10%; animation-delay: 0.3s; }
+.sparkles span:nth-child(3) { bottom: 25%; left: 12%; animation-delay: 0.6s; }
+.sparkles span:nth-child(4) { bottom: 18%; right: 15%; animation-delay: 0.9s; }
+.sparkles span:nth-child(5) { top: 5%; left: 45%; animation-delay: 0.2s; }
+.sparkles span:nth-child(6) { bottom: 8%; left: 35%; animation-delay: 0.5s; }
+@keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+}
+
+/* ============================================ */
+/* SCENE 4: Smart Cat Flex                      */
+/* ============================================ */
+.scene4 {
+    background: #22c55e;
+}
+
+.cat-cool {
+    font-size: 220px;
+    animation: catSwag 2s ease-in-out infinite;
+}
+@keyframes catSwag {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(-3deg) scale(1.05); }
+    75% { transform: rotate(3deg) scale(1.05); }
+}
+
+.scene4 .label {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    background: white; color: #1a1c1c; font-size: 36px; font-weight: 900;
+    padding: 16px 44px; border-radius: 50px;
+}
+
+.flex-card {
+    background: white; border: 6px solid #1a1c1c; border-radius: 40px;
+    padding: 44px 56px; margin-top: 30px;
+    box-shadow: 10px 10px 0px rgba(26,28,28,0.2);
+    max-width: 90%;
+    animation: flexPop 0.6s 0.3s ease-out both;
+}
+@keyframes flexPop {
+    from { opacity: 0; transform: scale(0.7) rotate(-3deg); }
+    to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.flex-card .deal {
+    font-size: 44px; font-weight: 800; color: #1a1c1c; line-height: 1.5;
+}
+.flex-card .deal em { font-style: normal; color: #22c55e; font-weight: 900; }
+
+.cta-final {
+    margin-top: 40px;
+    font-size: 72px; font-weight: 900; color: #1a1c1c;
+    background: white; padding: 32px 80px;
+    border: 6px solid #1a1c1c; border-radius: 100px;
+    box-shadow: 10px 10px 0px rgba(26,28,28,0.3);
+    animation: ctaPulse 1.5s 1s ease-in-out infinite;
+}
+@keyframes ctaPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+.final-sub {
+    font-size: 38px; font-weight: 800; color: rgba(255,255,255,0.7);
+    margin-top: 24px;
+}
+
+/* Flying money */
+.money-rain {
+    position: absolute; width: 100%; height: 100%; pointer-events: none;
+}
+.money-rain span {
+    position: absolute; font-size: 50px;
+    animation: moneyFall linear infinite;
+}
+.money-rain span:nth-child(1) { left: 5%; animation-duration: 3s; animation-delay: 0s; }
+.money-rain span:nth-child(2) { left: 20%; animation-duration: 2.5s; animation-delay: 0.5s; }
+.money-rain span:nth-child(3) { left: 40%; animation-duration: 3.5s; animation-delay: 0.2s; }
+.money-rain span:nth-child(4) { left: 60%; animation-duration: 2.8s; animation-delay: 0.8s; }
+.money-rain span:nth-child(5) { left: 80%; animation-duration: 3.2s; animation-delay: 0.4s; }
+.money-rain span:nth-child(6) { left: 90%; animation-duration: 2.6s; animation-delay: 1s; }
+@keyframes moneyFall {
+    0% { top: -10%; opacity: 0; transform: rotate(0deg); }
+    10% { opacity: 0.8; }
+    100% { top: 110%; opacity: 0; transform: rotate(360deg); }
+}
+
+/* Common animations */
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Grain overlay */
+body::after {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+}
+</style>
+</head>
+<body>
+
+<!-- SCENE 1: Confused Cat -->
+<div class="scene scene1">
+    <div class="qmarks">
+        <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+    </div>
+    <div class="label">POV: Shopping in Germany 🇩🇪</div>
+    <div class="cat-confused">😿</div>
+    <div class="speech-bubble">
+        <div class="speech-text">
+            I'm at Aldi... is butter <em>actually</em> cheapest here?<br><br>
+            Or was that Lidl? Or Penny??<br><br>
+            I have <em>NO IDEA!</em> 😭
+        </div>
+    </div>
+</div>
+
+<!-- SCENE 2: Frustrated Cat -->
+<div class="scene scene2">
+    <div class="label">Checking 5 websites manually 😩</div>
+    <div class="cat-angry">😾</div>
+    <div class="website-list">
+        <div class="website-item">
+            <div class="name">🔵 Lidl.de</div>
+            <div class="status">Loading<span class="loading-dots">...</span></div>
+        </div>
+        <div class="website-item">
+            <div class="name">🟡 Aldi App</div>
+            <div class="status">Where are prices?!</div>
+        </div>
+        <div class="website-item">
+            <div class="name">🔴 Penny Prospekt</div>
+            <div class="status">47 PAGES?! 📄</div>
+        </div>
+        <div class="website-item">
+            <div class="name">🟠 Kaufland.de</div>
+            <div class="status">SO COMPLICATED</div>
+        </div>
+        <div class="website-item">
+            <div class="name">🟢 Netto App</div>
+            <div class="status">GIVE UP!! 🤯</div>
+        </div>
+    </div>
+</div>
+
+<!-- SCENE 3: Discovery -->
+<div class="scene scene3">
+    <div class="sparkles">
+        <span>✨</span><span>⭐</span><span>✨</span><span>💫</span><span>⭐</span><span>✨</span>
+    </div>
+    <div class="label">Then I found papierbox.eu 👀</div>
+    <div class="cat-excited">🙀</div>
+    <div class="discovery-bubble">
+        <div class="text">
+            Wait... <em>papierbox.eu</em>??<br><br>
+            I type Butter... pick my city...<br><br>
+            EVERY store's price in <em>5 SECONDS?!</em><br><br>
+            This is <em>GENIUS!!</em> 🤩
+        </div>
+    </div>
+</div>
+
+<!-- SCENE 4: Smart Cat Flex -->
+<div class="scene scene4">
+    <div class="money-rain">
+        <span>💰</span><span>💶</span><span>💰</span><span>💵</span><span>💶</span><span>💰</span>
+    </div>
+    <div class="label">papierbox.eu — Free forever 😎</div>
+    <div class="cat-cool">😼</div>
+    <div class="flex-card">
+        <div class="deal">
+            🧈 Butter at Kaufland: <em>€1.29</em><br>
+            Everyone else: more expensive<br><br>
+            I just saved <em>60%</em><br>
+            I am the <em>smartest cat</em><br>in Germany 😎
+        </div>
+    </div>
+    <div class="cta-final">papierbox.eu</div>
+    <div class="final-sub">You're welcome. 😼💚</div>
+</div>
+
+</body></html>

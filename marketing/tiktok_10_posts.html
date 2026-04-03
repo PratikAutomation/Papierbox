@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierbox — 10 TikTok/Instagram Posts</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #f0f0f0; font-family: 'Plus Jakarta Sans', sans-serif; color: #1a1c1c; padding: 20px; }
+
+.page-header { text-align: center; padding: 30px 20px; margin-bottom: 30px; }
+.page-header h1 { color: #1a1c1c; font-size: 22px; font-weight: 900; }
+.page-header span { color: #22c55e; }
+.page-header p { color: #888; font-size: 12px; margin-top: 6px; }
+
+.post-section { max-width: 1600px; margin: 0 auto 50px; }
+.post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding: 0 4px; }
+.post-title { color: #1a1c1c; font-size: 14px; font-weight: 900; }
+.lang-badge { background: #22c55e; color: white; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 16px; }
+.post-caption { color: #999; font-size: 10px; margin-bottom: 14px; padding: 0 4px; }
+.post-caption code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; color: #666; font-size: 9px; }
+
+.slides-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 14px; }
+.slide-wrapper { flex-shrink: 0; }
+
+/* === THE SLIDE — matches papierbox.eu neo-brutalist theme === */
+.slide {
+  width: 324px; height: 576px; border-radius: 24px;
+  background: #FAFAFA;
+  border: 4px solid #1a1c1c;
+  box-shadow: 6px 6px 0px 0px #1a1c1c;
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; padding: 28px 22px;
+}
+
+/* Grainy texture overlay like the website */
+.slide::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+.slide > * { position: relative; z-index: 1; }
+
+.sn { position: absolute; top: 12px; right: 14px; background: #1a1c1c; color: white; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 20px; z-index: 2; }
+
+.logo-img { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); height: 30px; width: auto; opacity: 0.35; z-index: 2; }
+
+.dl-btn {
+  display: block; width: 100%; margin-top: 6px; padding: 7px;
+  background: white; border: 2px solid #1a1c1c;
+  box-shadow: 2px 2px 0px 0px #1a1c1c;
+  color: #1a1c1c; font-family: inherit; font-weight: 800; font-size: 10px;
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.dl-btn:hover { background: #22c55e; color: white; }
+.dl-all {
+  display: inline-block; margin-top: 8px; padding: 8px 20px;
+  background: #22c55e; color: white; font-weight: 900; font-size: 12px;
+  border: 2px solid #1a1c1c; box-shadow: 3px 3px 0px 0px #1a1c1c;
+  border-radius: 10px; cursor: pointer;
+}
+
+/* === Text styles matching papierbox.eu === */
+.emoji-xl { font-size: 48px; margin-bottom: 14px; }
+.hook { font-size: 28px; font-weight: 900; line-height: 1.08; letter-spacing: -0.5px; color: #1a1c1c; }
+.hook em { font-style: normal; color: #22c55e; }
+.hook .red { color: #dc2626; }
+.sub { font-size: 13px; font-weight: 700; color: #1a1c1c; opacity: 0.4; margin-top: 10px; }
+
+.label { font-size: 10px; font-weight: 900; color: #22c55e; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 12px; width: 100%; text-align: left; }
+
+/* Neo-brutalist cards */
+.row {
+  width: 100%; background: white; border: 2px solid #1a1c1c;
+  border-radius: 14px; padding: 10px 14px; margin-bottom: 6px;
+  display: flex; justify-content: space-between; align-items: center; text-align: left;
+  box-shadow: 2px 2px 0px 0px rgba(26,28,28,0.1);
+}
+.row.hl { background: #22c55e; color: white; border-color: #1a1c1c; }
+.row.hl .l { color: white; }
+.row.hl .l small { color: rgba(255,255,255,0.7); }
+.row .l { font-weight: 700; font-size: 13px; color: #1a1c1c; }
+.row .l small { font-size: 10px; color: #1a1c1c; opacity: 0.4; display: block; margin-top: 1px; }
+.row .r { font-weight: 900; font-size: 17px; color: #1a1c1c; }
+.row .r.g { color: #22c55e; }
+.row .r.red { color: #dc2626; }
+
+/* CTA box — matching papierbox.eu button style */
+.cta {
+  font-size: 22px; font-weight: 900; color: white; background: #22c55e;
+  padding: 12px 32px; border: 3px solid #1a1c1c;
+  border-radius: 50px; box-shadow: 4px 4px 0px 0px #1a1c1c;
+  margin-top: 14px;
+}
+.cta-sub { font-size: 11px; color: #1a1c1c; opacity: 0.35; margin-top: 8px; font-weight: 700; }
+.feat { font-size: 12px; font-weight: 700; color: #1a1c1c; opacity: 0.65; margin-bottom: 7px; text-align: left; width: 100%; }
+.feat span { color: #22c55e; margin-right: 5px; }
+
+.pill { display: inline-block; background: #22c55e; color: white; font-size: 10px; font-weight: 900; padding: 5px 14px; border-radius: 20px; margin-bottom: 12px; border: 2px solid #1a1c1c; }
+.pill.red { background: #dc2626; }
+.pill.outline { background: transparent; color: #1a1c1c; border: 2px solid #1a1c1c; }
+
+.num-big { font-size: 64px; font-weight: 900; line-height: 1; }
+.num-big.g { color: #22c55e; }
+.num-big.r { color: #dc2626; }
+
+/* Squiggle underline like the website */
+.squiggle { text-decoration-style: wavy; text-decoration-color: #22c55e; text-underline-offset: 6px; text-decoration-line: underline; text-decoration-thickness: 3px; }
+
+.list-item { width: 100%; text-align: left; padding: 8px 0; border-bottom: 2px solid rgba(26,28,28,0.06); }
+.list-item:last-child { border-bottom: none; }
+.list-item .num { color: #22c55e; font-weight: 900; font-size: 20px; margin-right: 8px; }
+.list-item .txt { font-weight: 700; font-size: 13px; color: #1a1c1c; }
+.list-item .txt small { display: block; font-size: 10px; color: #1a1c1c; opacity: 0.4; font-weight: 600; margin-top: 2px; }
+
+/* Green accent slide */
+.slide.green-bg { background: #22c55e; }
+.slide.green-bg .hook { color: white; }
+.slide.green-bg .hook em { color: #1a1c1c; }
+.slide.green-bg .sub { color: white; opacity: 0.7; }
+.slide.green-bg .cta { background: white; color: #1a1c1c; }
+.slide.green-bg .cta-sub { color: white; opacity: 0.6; }
+.slide.green-bg .feat { color: white; opacity: 0.85; }
+.slide.green-bg .feat span { color: #1a1c1c; }
+.slide.green-bg .sn { background: white; color: #1a1c1c; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>📱 <span>Papierbox</span> — 10 Posts for TikTok & Instagram</h1>
+  <p>Neo-brutalist design matching papierbox.eu · Click "Download" for 1080×1920 PNG</p>
+</div>
+
+<!-- POST 1 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">1. "The cheapest supermarket is NOT what you think"</div><div class="lang-badge">🇬🇧 EN</div></div>
+  <div class="post-caption"><code>#germany #supermarket #expat #groceries #savemoney #lidl #aldi #penny #kaufland #livingingingermany</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s1a"><div class="sn">1/4</div><div class="emoji-xl">🏆</div><div class="hook">The <em>cheapest</em><br>supermarket in<br>Germany is <span class="red">NOT</span><br>what you think</div><div class="sub">Swipe to find out →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s1a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s1b"><div class="sn">2/4</div><div class="pill outline">WHAT MOST PEOPLE THINK</div><div style="font-size:18px; font-weight:800; margin-bottom:20px;">"Aldi is always cheapest"</div><div class="pill red">THE TRUTH</div><div style="font-size:14px; font-weight:700; opacity:0.6; margin-bottom:14px;">It changes <em style="color:#22c55e; font-style:normal; font-weight:900;">EVERY WEEK</em></div>
+      <div class="row"><div class="l">🧈 Butter<small>Cheapest this week</small></div><div class="r g">Kaufland</div></div>
+      <div class="row"><div class="l">☕ Coffee<small>Cheapest this week</small></div><div class="r g">Penny</div></div>
+      <div class="row"><div class="l">🍫 Chocolate<small>Cheapest this week</small></div><div class="r g">Kaufland</div></div>
+      <div class="row"><div class="l">🥛 Milk<small>Cheapest this week</small></div><div class="r g">Lidl</div></div>
+    <img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s1b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s1c"><div class="sn">3/4</div><div class="emoji-xl">🧠</div><div class="hook" style="font-size:22px;">The only way to<br>save money is to<br><em>compare before</em><br>you shop</div><div class="sub">But who has time for 5 websites?</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s1c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s1d"><div class="sn">4/4</div><div class="hook" style="font-size:20px;">That's why I built<br>a tool that does it<br><em>in 5 seconds</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Free · No signup · Works in English</div><div style="margin-top:16px; text-align:left; width:100%;"><div class="feat"><span>🔍</span> Search any product</div><div class="feat"><span>📍</span> Pick your city</div><div class="feat"><span>💰</span> See cheapest price — instantly</div></div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s1d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s1',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 2 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">2. "5 Dinge die Expats beim Einkaufen zu spät lernen"</div><div class="lang-badge">🇩🇪 DE</div></div>
+  <div class="post-caption"><code>#expat #deutschland #einkaufen #supermarkt #sparen #tipps #lidl #aldi #penny #kaufland</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s2a"><div class="sn">1/4</div><div class="emoji-xl">🤦</div><div class="hook"><em>5 Dinge</em> die<br>Expats beim<br>Einkaufen<br><span class="red">zu spät</span> lernen</div><div class="sub">Nr. 4 hätte mir Hunderte € gespart →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s2a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s2b"><div class="sn">2/4</div><div style="text-align:left; width:100%;">
+      <div class="list-item"><span class="num">1</span><span class="txt">Eigenmarken = gleiche Fabrik, halber Preis<small>Lidl Milbona oft = Markenmolkerei</small></span></div>
+      <div class="list-item"><span class="num">2</span><span class="txt">Donnerstag starten neue Angebote<small>Nicht nur Montag — Do. auch checken!</small></span></div>
+      <div class="list-item"><span class="num">3</span><span class="txt">Pfand ist KEIN Aufpreis<small>25 Cent pro Flasche zurück am Automaten</small></span></div>
+    </div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s2b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s2c"><div class="sn">3/4</div><div style="text-align:left; width:100%;">
+      <div class="list-item"><span class="num" style="color:#dc2626;">4</span><span class="txt" style="font-size:14px;">Gleiches Produkt kostet bis zu <span style="color:#dc2626; font-weight:900;">60% mehr</span><small>MILKA: €0,77 vs €1,99 — selbe Woche, anderer Laden!</small></span></div>
+      <div class="list-item"><span class="num">5</span><span class="txt">Es gibt ein Tool das alle Preise vergleicht<small>Kostenlos. 5 Sekunden. →</small></span></div>
+    </div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s2c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s2d"><div class="sn">4/4</div><div class="hook" style="font-size:20px;">Preise vergleichen<br>in <em>5 Sekunden</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Lidl · Aldi · Penny · Kaufland · Netto</div><div style="margin-top:14px; text-align:left; width:100%;"><div class="feat"><span>✓</span> Alle Angebote der Woche</div><div class="feat"><span>✓</span> Günstigsten Preis sofort sehen</div><div class="feat"><span>✓</span> 100% kostenlos</div></div><div style="margin-top:10px; font-size:12px; font-weight:800; color:white; opacity:0.5;">Speicher dir das! 📌</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s2d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s2',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 3 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">3. "I saved €600/year changing ONE habit"</div><div class="lang-badge">🇬🇧 EN</div></div>
+  <div class="post-caption"><code>#moneysaving #germany #expat #groceries #budgeting #frugal #savemoney #lifehack #expatlife</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s3a"><div class="sn">1/4</div><div class="emoji-xl">💸</div><div class="hook">I saved<br><em>€600/year</em><br>changing <span class="squiggle">ONE</span><br>grocery habit</div><div class="sub">It takes 30 seconds →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s3a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s3b"><div class="sn">2/4</div><div class="pill red">BEFORE</div><div style="font-size:15px; font-weight:700; opacity:0.6; margin-bottom:16px;">Same store every week<br>without checking prices</div><div class="num-big r">€380</div><div style="font-size:11px; opacity:0.35; font-weight:700;">/month on groceries</div><div style="margin-top:16px; font-size:13px; font-weight:700; opacity:0.4;">Overpaying on 60% of items without knowing</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s3b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s3c"><div class="sn">3/4</div><div class="pill">AFTER</div><div style="font-size:15px; font-weight:700; opacity:0.6; margin-bottom:16px;">30 seconds comparing prices<br>before leaving the house</div><div class="num-big g">€330</div><div style="font-size:11px; opacity:0.35; font-weight:700;">same food, smarter stores</div><div style="margin-top:16px; font-size:18px; font-weight:900; color:#22c55e;">= €50/month = €600/year saved</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s3c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s3d"><div class="sn">4/4</div><div class="hook" style="font-size:18px;">The tool I use to<br>compare in<br><em>5 seconds</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Free · No signup · No ads</div><div style="margin-top:14px; font-size:13px; font-weight:800; color:white; opacity:0.5;">Your future self will thank you 🙏</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s3d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s3',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 4 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">4. "Aldi vs Lidl — Wer gewinnt WIRKLICH?"</div><div class="lang-badge">🇩🇪 DE</div></div>
+  <div class="post-caption"><code>#aldi #lidl #supermarkt #preisvergleich #deutschland #einkaufen #sparen #vs #battle</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s4a"><div class="sn">1/4</div><div style="font-size:42px; margin-bottom:10px;">⚔️</div><div class="hook"><em>Aldi</em> vs <em>Lidl</em></div><div style="font-size:16px; font-weight:900; opacity:0.4; margin-top:6px;">Wer gewinnt WIRKLICH?</div><div class="sub">Die Wahrheit überrascht →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s4a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s4b"><div class="sn">2/4</div><div class="label">⚔️ Head to Head</div>
+      <div class="row"><div class="l">🧈 Butter</div><div class="r" style="font-size:12px;">Beide ähnlich</div></div>
+      <div class="row"><div class="l">🥛 Milch</div><div class="r g" style="font-size:12px;">Lidl ✓</div></div>
+      <div class="row"><div class="l">🍞 Brot</div><div class="r g" style="font-size:12px;">Aldi ✓</div></div>
+      <div class="row"><div class="l">🍫 Schokolade</div><div class="r g" style="font-size:12px;">Lidl ✓</div></div>
+      <div class="row"><div class="l">☕ Kaffee</div><div class="r g" style="font-size:12px;">Aldi ✓</div></div>
+      <div class="row"><div class="l">🧀 Käse</div><div class="r" style="font-size:12px;">Beide ähnlich</div></div>
+      <div class="row"><div class="l">🥩 Fleisch</div><div class="r g" style="font-size:12px;">Lidl ✓</div></div>
+    <img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s4b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s4c"><div class="sn">3/4</div><div style="font-size:42px; margin-bottom:8px;">🤷</div><div class="hook" style="font-size:22px;">Es gibt <span class="red">keinen</span><br>klaren Gewinner</div><div style="font-size:14px; font-weight:700; opacity:0.5; margin-top:12px;">Es kommt IMMER darauf an<br>was du diese Woche kaufst</div><div style="margin-top:18px; font-size:13px; font-weight:800; opacity:0.3;">Deshalb brauchst du ein Tool →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s4c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s4d"><div class="sn">4/4</div><div class="hook" style="font-size:18px;">Alle 5 Supermärkte.<br>Ein Klick.<br><em>Günstigster Preis.</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Kostenlos · Kein Login · Sofort</div><div style="margin-top:14px; font-size:13px; font-weight:800; color:white; opacity:0.5;">Team Aldi oder Team Lidl? 👇</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s4d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s4',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 5 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">5. "Dein Einkauf kostet dich €200 zu viel"</div><div class="lang-badge">🇩🇪 DE</div></div>
+  <div class="post-caption"><code>#sparen #einkaufen #geldsparen #deutschland #supermarkt #spartipp #lebensmittel #preise #budget</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s5a"><div class="sn">1/4</div><div class="emoji-xl">⚠️</div><div class="hook">Dein Einkauf<br>kostet dich<br><span class="red">€200 zu viel</span><br>pro Jahr</div><div class="sub">Und du merkst es nicht mal →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s5a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s5b"><div class="sn">2/4</div><div class="label">⚠️ Das Problem</div><div style="text-align:left; width:100%; font-size:13px; font-weight:700; line-height:2; opacity:0.7;">
+      <div>❌ Immer zum gleichen Supermarkt</div><div>❌ Nie Preise verglichen</div><div>❌ "Sind ja nur Cent-Beträge"</div><div>❌ Marke statt Eigenmarke</div><div>❌ Wochenangebote ignoriert</div>
+    </div><div style="margin-top:14px; font-size:18px; font-weight:900; color:#dc2626;">= €200+ pro Jahr verschenkt</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s5b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s5c"><div class="sn">3/4</div><div class="label">✅ Die Lösung</div><div style="text-align:left; width:100%; font-size:13px; font-weight:700; line-height:2; opacity:0.7;">
+      <div>✅ 30 Sek. Preise checken vor dem Einkauf</div><div>✅ Zum günstigsten Store gehen</div><div>✅ Wochenangebote nutzen (bis -60%!)</div>
+    </div><div style="margin-top:14px; font-size:18px; font-weight:900; color:#22c55e;">= €200+ pro Jahr gespart</div><div style="margin-top:6px; font-size:11px; opacity:0.35; font-weight:700;">Gleiches Essen. Weniger zahlen.</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s5c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s5d"><div class="sn">4/4</div><div class="hook" style="font-size:20px;">Preise vergleichen<br>war noch nie<br><em>so einfach</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Alle Supermärkte · Kostenlos</div><div style="margin-top:12px; font-size:12px; font-weight:800; color:white; opacity:0.5;">Spar dir das für was Schöneres 💚</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s5d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s5',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 6 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">6. "POV: German supermarkets as a foreigner"</div><div class="lang-badge">🇬🇧 EN</div></div>
+  <div class="post-caption"><code>#pov #germany #expat #culture #funny #supermarket #foreigner #movingabroad #expatlife #relatable</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s6a"><div class="sn">1/5</div><div class="emoji-xl">😳</div><div class="hook">POV:<br>German<br>supermarkets<br>as a <em>foreigner</em></div><div class="sub">It's a whole different world →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s6a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s6b"><div class="sn">2/5</div><div style="text-align:left; width:100%; font-size:14px; font-weight:700; line-height:2.2;">
+      <div>😱 Cashier scans at <span style="color:#dc2626; font-weight:900;">light speed</span></div><div>🪙 You need a <span style="color:#22c55e; font-weight:900;">coin for the cart</span></div><div>🛍️ No bags. <span style="color:#dc2626; font-weight:900;">Bring your own.</span></div><div>🕐 Closed on Sunday. <span style="color:#dc2626; font-weight:900;">ALL of them.</span></div><div>💳 Many only take <span style="color:#22c55e; font-weight:900;">EC card</span></div>
+    </div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s6b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s6c"><div class="sn">3/5</div><div style="text-align:left; width:100%; font-size:14px; font-weight:700; line-height:2.2;">
+      <div>🤔 5 stores, <span style="color:#dc2626; font-weight:900;">5 different prices</span></div><div>📰 Weekly leaflets <span style="color:#22c55e; font-weight:900;">change everything</span></div><div>🏷️ "Angebot" = offer <span style="color:#22c55e; font-weight:900;">(learn this word)</span></div><div>🧾 Receipts are <span style="color:#dc2626; font-weight:900;">2 meters long</span></div><div>📦 Pack your bags <span style="color:#dc2626; font-weight:900;">FAST</span></div>
+    </div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s6c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s6d"><div class="sn">4/5</div><div class="emoji-xl">🧠</div><div class="hook" style="font-size:20px;">The <span class="red">biggest</span><br>mistake expats<br>make?</div><div style="margin-top:14px; font-size:16px; font-weight:800; color:#dc2626;">Going to the same store<br>every week without<br>comparing prices</div><div style="margin-top:12px; font-size:12px; opacity:0.35; font-weight:700;">You could save €50/month →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s6d')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s6e"><div class="sn">5/5</div><div class="hook" style="font-size:18px;">Compare all stores<br><em>in one search</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Built by an expat, for expats 🇩🇪</div><div style="margin-top:14px; text-align:left; width:100%;"><div class="feat"><span>🔍</span> Search in English or German</div><div class="feat"><span>⚡</span> Results in 5 seconds</div><div class="feat"><span>🆓</span> Free forever</div></div><div style="margin-top:8px; font-size:12px; font-weight:800; color:white; opacity:0.4;">Tag a friend who needs this 👇</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s6e')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s6',5)">⬇ Download All 5</button>
+</div>
+
+<!-- POST 7 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">7. "3 Produkte beim falschen Laden"</div><div class="lang-badge">🇩🇪 DE</div></div>
+  <div class="post-caption"><code>#einkaufstipp #supermarkt #sparen #deutschland #lebensmittel #preisvergleich #spartipp</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s7a"><div class="sn">1/3</div><div class="emoji-xl">🚫</div><div class="hook"><em>3 Produkte</em><br>die du IMMER<br>beim <span class="red">falschen</span><br>Laden kaufst</div><div class="sub">Nr. 3 überrascht →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s7a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s7b"><div class="sn">2/3</div>
+      <div style="width:100%; text-align:left; margin-bottom:10px;"><div style="font-size:20px; font-weight:900; margin-bottom:3px;">1. Butter 🧈</div><div class="row"><div class="l">Gewohnheits-Store</div><div class="r red">teuer</div></div><div class="row hl"><div class="l">Im Angebot</div><div class="r" style="color:white; font-size:15px;">bis -55%</div></div></div>
+      <div style="width:100%; text-align:left; margin-bottom:10px;"><div style="font-size:20px; font-weight:900; margin-bottom:3px;">2. Kaffee ☕</div><div class="row"><div class="l">Normalpreis</div><div class="r red">teuer</div></div><div class="row hl"><div class="l">Im Angebot</div><div class="r" style="color:white; font-size:15px;">bis -42%</div></div></div>
+      <div style="width:100%; text-align:left;"><div style="font-size:20px; font-weight:900; margin-bottom:3px;">3. Schoko 🍫</div><div class="row"><div class="l">Normalpreis</div><div class="r red">teuer</div></div><div class="row hl"><div class="l">Im Angebot</div><div class="r" style="color:white; font-size:15px;">bis -61%</div></div></div>
+    <img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s7b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s7c"><div class="sn">3/3</div><div class="hook" style="font-size:18px;">Angebote checken<br>bevor du einkaufst.<br><em>30 Sekunden.</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Alle Stores · Alle Angebote · Ein Klick</div><div style="margin-top:12px; font-size:12px; font-weight:800; color:white; opacity:0.4;">Speichern für den nächsten Einkauf 📌</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s7c')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s7',3)">⬇ Download All 3</button>
+</div>
+
+<!-- POST 8 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">8. "The 30-second grocery hack"</div><div class="lang-badge">🇬🇧 EN</div></div>
+  <div class="post-caption"><code>#lifehack #groceryhack #germany #savemoney #expat #frugalliving #moneytips #smartshopping</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s8a"><div class="sn">1/3</div><div class="emoji-xl">⏱️</div><div class="hook" style="color:#004225;">The <em>30-second</em><br>grocery hack<br>nobody talks<br>about</div><div class="sub" style="color:#004225;">Stupidly simple →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s8a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s8b"><div class="sn">2/3</div><div class="label" style="font-size:14px; margin-bottom:18px;">BEFORE YOU LEAVE THE HOUSE:</div><div style="text-align:left; width:100%;">
+      <div style="font-size:24px; font-weight:900; margin-bottom:22px; color:#004225;">Step 1: <span style="color:#22c55e;">Open papierbox.eu</span></div>
+      <div style="font-size:24px; font-weight:900; margin-bottom:22px; color:#004225;">Step 2: <span style="color:#22c55e;">Search what you need</span><br><span style="font-size:16px; color:#004225; opacity:0.5; font-weight:700;">"Butter", "Milch", "Kaffee"</span></div>
+      <div style="font-size:24px; font-weight:900; margin-bottom:22px; color:#004225;">Step 3: <span style="color:#22c55e;">Go to cheapest store</span></div>
+    </div><div class="row hl" style="margin-top:14px; padding:16px 18px;"><div class="l" style="color:white; font-size:18px;">⏱️ Total time</div><div class="r" style="color:white; font-size:22px;">30 sec</div></div><div class="row hl" style="padding:16px 18px;"><div class="l" style="color:white; font-size:18px;">💰 Monthly savings</div><div class="r" style="color:white; font-size:22px;">€50+</div></div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s8b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s8c"><div class="sn">3/3</div><div class="hook" style="font-size:30px;">Try it now 👇</div><div class="cta">papierbox.eu</div><div class="cta-sub" style="font-size:14px;">Free · English & German · All 5 stores</div><div style="margin-top:20px; font-size:16px; font-weight:800; color:white; opacity:0.5;">Save this for your next grocery run 📌</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s8c')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s8',3)">⬇ Download All 3</button>
+</div>
+
+<!-- POST 9 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">9. "Eigenmarken — das Geheimnis"</div><div class="lang-badge">🇩🇪 DE</div></div>
+  <div class="post-caption"><code>#eigenmarke #supermarkt #qualität #sparen #lidl #aldi #penny #kaufland #netto #deutschland</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s9a"><div class="sn">1/4</div><div class="emoji-xl">🏷️</div><div class="hook">Das <em>Geheimnis</em><br>der Eigenmarken<br>das Supermärkte<br><span class="red">nicht verraten</span></div><div class="sub">Wusstest du das? →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s9a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s9b"><div class="sn">2/4</div><div class="label">🏷️ Die Eigenmarken der Stores</div>
+      <div class="row"><div class="l">Lidl</div><div class="r" style="font-size:11px; color:#22c55e;">Milbona · Cien · W5</div></div>
+      <div class="row"><div class="l">Aldi</div><div class="r" style="font-size:11px; color:#22c55e;">Milsani · Lacura · Tandil</div></div>
+      <div class="row"><div class="l">Penny</div><div class="r" style="font-size:11px; color:#22c55e;">Best Moments</div></div>
+      <div class="row"><div class="l">Kaufland</div><div class="r" style="font-size:11px; color:#22c55e;">K-Classic · K-Bio</div></div>
+      <div class="row"><div class="l">Netto</div><div class="r" style="font-size:11px; color:#22c55e;">Gut & Günstig</div></div>
+    <img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s9b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s9c"><div class="sn">3/4</div><div class="row hl" style="margin-bottom:16px;"><div class="l" style="color:white; font-size:14px;">🤫 Das Geheimnis</div><div class="r" style="color:white; font-size:11px;">Gleiche Fabrik!</div></div><div style="text-align:left; width:100%; font-size:13px; font-weight:700; line-height:1.9; opacity:0.7;">
+      <div>🧈 "Milbona" Butter = gleiche Molkerei</div><div>🧼 "Tandil" = gleicher Hersteller wie Persil</div><div>🥛 Penny Milch = selbe Quelle</div>
+    </div><div style="margin-top:16px; font-size:18px; font-weight:900; color:#22c55e;">50% sparen<br>0% Qualitätsverlust</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s9c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s9d"><div class="sn">4/4</div><div class="hook" style="font-size:18px;">Eigenmarke + Angebot<br>=<br><em>Maximum sparen</em></div><div class="cta">papierbox.eu</div><div class="cta-sub">Günstigsten Preis in 5 Sekunden finden</div><div style="margin-top:12px; font-size:12px; font-weight:800; color:white; opacity:0.4;">Folge für mehr Spar-Tipps 💚</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s9d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s9',4)">⬇ Download All 4</button>
+</div>
+
+<!-- POST 10 -->
+<div class="post-section">
+  <div class="post-header"><div class="post-title">10. "I asked AI to find the cheapest grocery list"</div><div class="lang-badge">🇬🇧 EN</div></div>
+  <div class="post-caption"><code>#ai #technology #groceries #germany #expat #smartshopping #artificialintelligence #techtok #innovation</code></div>
+  <div class="slides-row">
+    <div class="slide-wrapper"><div class="slide" id="s10a"><div class="sn">1/4</div><div class="emoji-xl">🤖</div><div class="hook">I asked <em>AI</em><br>to find the<br>cheapest grocery<br>list in Germany</div><div class="sub">The results are insane →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s10a')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s10b"><div class="sn">2/4</div><div class="label">🤖 AI scanned all 5 stores</div><div style="text-align:left; width:100%; font-size:13px; font-weight:700; line-height:1.8; opacity:0.7;">
+      <div>🧈 Butter → <span style="color:#22c55e; font-weight:900;">Kaufland</span></div><div>☕ Kaffee → <span style="color:#22c55e; font-weight:900;">Penny</span></div><div>🍫 Schoko → <span style="color:#22c55e; font-weight:900;">Kaufland</span></div><div>🥛 Milch → <span style="color:#22c55e; font-weight:900;">Lidl</span></div><div>🧀 Käse → <span style="color:#22c55e; font-weight:900;">Penny</span></div><div>🍝 Pasta → <span style="color:#22c55e; font-weight:900;">Kaufland</span></div>
+    </div><div class="row hl" style="margin-top:10px;"><div class="l" style="color:white;">Result</div><div class="r" style="color:white; font-size:12px;">3 stores = max savings</div></div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s10b')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide" id="s10c"><div class="sn">3/4</div><div class="emoji-xl">💡</div><div class="hook" style="font-size:20px;">No single store<br>is <em>always</em><br>the cheapest</div><div style="margin-top:14px; font-size:14px; font-weight:700; opacity:0.5;">The cheapest list means<br>buying from 2-3 stores</div><div style="margin-top:14px; font-size:13px; opacity:0.3; font-weight:700;">You don't need AI for this...<br>you need one website →</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s10c')">⬇ Download</button></div>
+    <div class="slide-wrapper"><div class="slide green-bg" id="s10d"><div class="sn">4/4</div><div style="font-size:11px; font-weight:800; color:white; opacity:0.5; margin-bottom:6px;">THE TOOL THAT DOES THIS FOR FREE:</div><div class="cta">papierbox.eu</div><div class="cta-sub">AI-powered grocery price comparison</div><div style="margin-top:16px; text-align:left; width:100%;"><div class="feat"><span>🤖</span> AI finds the best deals</div><div class="feat"><span>🏪</span> Lidl · Aldi · Penny · Kaufland · Netto</div><div class="feat"><span>⚡</span> Results in 5 seconds</div><div class="feat"><span>🆓</span> Free. No signup. No catch.</div></div><div style="margin-top:8px; font-size:12px; font-weight:800; color:white; opacity:0.4;">The future of grocery shopping 🚀</div><img class="logo-img" src="../public/logo.png" alt=""></div><button class="dl-btn" onclick="dl('s10d')">⬇ Download</button></div>
+  </div><button class="dl-all" onclick="dlAll('s10',4)">⬇ Download All 4</button>
+</div>
+
+<div style="text-align:center; padding:30px; color:#aaa; font-size:11px;">
+  10 posts · 39 slides · All matching papierbox.eu design language<br>
+  White bg · Green (#22c55e) accent · Black (#1a1c1c) text · Neo-brutalist borders & shadows
+</div>
+
+<script>
+async function dl(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const btn = el.parentElement.querySelector('.dl-btn');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Generating...';
+
+  try {
+    // Calculate scale to get 1080x1920 output
+    const scaleX = 1080 / el.offsetWidth;
+    const scaleY = 1920 / el.offsetHeight;
+    const scale = Math.max(scaleX, scaleY);
+
+    const canvas = await html2canvas(el, {
+      scale: scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#FAFAFA',
+      logging: false,
+      imageTimeout: 0,
+      onclone: function(clonedDoc) {
+        // Ensure fonts are loaded in clone
+        const clonedEl = clonedDoc.getElementById(id);
+        if (clonedEl) {
+          clonedEl.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
+        }
+      }
+    });
+
+    // Crop/resize to exact 1080x1920
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = 1080;
+    finalCanvas.height = 1920;
+    const ctx = finalCanvas.getContext('2d');
+    ctx.fillStyle = '#FAFAFA';
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // Center the rendered content
+    const srcW = canvas.width;
+    const srcH = canvas.height;
+    const fitScale = Math.min(1080 / srcW, 1920 / srcH);
+    const drawW = srcW * fitScale;
+    const drawH = srcH * fitScale;
+    const offsetX = (1080 - drawW) / 2;
+    const offsetY = (1920 - drawH) / 2;
+    ctx.drawImage(canvas, offsetX, offsetY, drawW, drawH);
+
+    const link = document.createElement('a');
+    link.download = `papierbox_${id}.png`;
+    link.href = finalCanvas.toDataURL('image/png', 1.0);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    btn.textContent = '✅ Downloaded!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  } catch(e) {
+    console.error('Download error:', e);
+    // Fallback: open slide fullscreen for manual screenshot
+    btn.textContent = '📸 Opening for screenshot...';
+    const win = window.open('', '_blank');
+    const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+    let styleHTML = '';
+    styles.forEach(s => styleHTML += s.outerHTML);
+    win.document.write(`<!DOCTYPE html><html><head>${styleHTML}<style>
+      body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#000;}
+      .slide{width:540px!important;height:960px!important;border-radius:0!important;box-shadow:none!important;}
+    </style></head><body>${el.outerHTML}<p style="position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:#666;font-family:sans-serif;font-size:12px;">Right-click → Save Image As, or use Win+Shift+S to screenshot</p></body></html>`);
+    win.document.close();
+    setTimeout(() => btn.textContent = orig, 3000);
+  }
+}
+
+async function dlAll(prefix, count) {
+  const ids = 'abcdefghij';
+  for (let i = 0; i < count; i++) {
+    await dl(prefix + ids[i]);
+    await new Promise(r => setTimeout(r, 800));
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierbox — TikTok & Instagram Posts</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0a; font-family: 'Plus Jakarta Sans', sans-serif; color: white; }
+
+.page-header {
+  text-align: center; padding: 40px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 40px;
+}
+.page-header h1 { color: #22c55e; font-size: 24px; font-weight: 900; }
+.page-header p { color: #666; font-size: 13px; margin-top: 8px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+.post-section { max-width: 1400px; margin: 0 auto 60px; padding: 0 20px; }
+.post-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.post-title { color: #22c55e; font-size: 18px; font-weight: 900; }
+.post-lang { background: rgba(255,255,255,0.1); color: #888; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.post-caption { color: #555; font-size: 12px; margin-bottom: 20px; }
+.post-caption code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: #888; }
+
+.slides-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 20px; }
+
+.slide-wrapper { flex-shrink: 0; }
+
+/* THE SLIDE — exact 1080x1920 ratio scaled to 324x576 for display */
+.slide {
+  width: 324px;
+  height: 576px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 30px 24px;
+}
+
+/* Full-res version for download (hidden) */
+.slide-hires {
+  width: 1080px;
+  height: 1920px;
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 100px 80px;
+  overflow: hidden;
+}
+
+.download-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #22c55e;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.download-btn:hover { background: rgba(34,197,94,0.3); }
+
+.download-all-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 24px;
+  background: #22c55e;
+  color: #000;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.download-all-btn:hover { background: #16a34a; }
+
+/* Slide styles */
+.slide-number { position: absolute; top: 12px; right: 14px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 16px; }
+.logo-bottom { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.15); letter-spacing: 3px; text-transform: uppercase; }
+
+.emoji-big { font-size: 52px; margin-bottom: 16px; }
+.hook { font-size: 30px; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px; }
+.hook em { font-style: normal; color: #22c55e; }
+.subhook { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.5); margin-top: 12px; }
+
+/* Hi-res versions scale everything up */
+.slide-hires .slide-number { font-size: 32px; padding: 10px 26px; top: 40px; right: 46px; border-radius: 50px; }
+.slide-hires .logo-bottom { font-size: 28px; bottom: 50px; letter-spacing: 8px; }
+.slide-hires .emoji-big { font-size: 160px; margin-bottom: 50px; }
+.slide-hires .hook { font-size: 96px; letter-spacing: -2px; }
+.slide-hires .subhook { font-size: 44px; margin-top: 36px; }
+.slide-hires .section-title { font-size: 38px; letter-spacing: 8px; margin-bottom: 40px; }
+.slide-hires .price-row { padding: 36px 44px; margin-bottom: 20px; border-radius: 32px; }
+.slide-hires .price-row .store-name { font-size: 44px; }
+.slide-hires .price-row .product-name { font-size: 32px; }
+.slide-hires .price-row .price-val { font-size: 64px; }
+.slide-hires .price-row .price-orig { font-size: 34px; }
+.slide-hires .price-row .winner-badge { font-size: 28px; padding: 8px 22px; top: -20px; right: 40px; }
+.slide-hires .discount-item { padding: 36px 44px; margin-bottom: 18px; border-radius: 28px; }
+.slide-hires .discount-item .d-name { font-size: 42px; }
+.slide-hires .discount-item .d-detail { font-size: 30px; }
+.slide-hires .discount-item .d-pct { font-size: 60px; }
+.slide-hires .cta-box { font-size: 80px; padding: 36px 80px; border-width: 6px; border-radius: 100px; margin-top: 50px; }
+.slide-hires .cta-sub { font-size: 40px; margin-top: 30px; }
+.slide-hires .cta-feat { font-size: 42px; margin-bottom: 26px; }
+.slide-hires .curiosity-text { font-size: 52px; }
+.slide-hires .big-number { font-size: 180px; }
+.slide-hires .reveal-text { font-size: 38px; }
+
+/* Component styles (display size) */
+.section-title { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; width: 100%; text-align: left; }
+
+.price-row { width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 16px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center; text-align: left; position: relative; }
+.price-row.best { background: rgba(34,197,94,0.1); border: 1.5px solid rgba(34,197,94,0.4); }
+.price-row .store-name { font-weight: 800; font-size: 14px; }
+.price-row .product-name { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.price-row .price-val { font-weight: 900; font-size: 20px; }
+.price-row .price-val.green { color: #22c55e; }
+.price-row .price-orig { font-size: 11px; color: rgba(255,255,255,0.25); text-decoration: line-through; }
+.price-row .winner-badge { position: absolute; top: -7px; right: 12px; background: #22c55e; color: #000; font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 12px; }
+
+.discount-item { width: 100%; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 11px 14px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+.discount-item .d-name { font-weight: 700; font-size: 13px; }
+.discount-item .d-detail { font-size: 10px; color: rgba(255,255,255,0.35); }
+.discount-item .d-pct { font-weight: 900; font-size: 18px; color: #ef4444; }
+
+.cta-box { font-size: 24px; font-weight: 900; color: #22c55e; padding: 10px 28px; border: 2.5px solid #22c55e; border-radius: 40px; margin-top: 16px; }
+.cta-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 10px; }
+.cta-feat { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+.cta-feat span { color: #22c55e; margin-right: 6px; }
+
+.curiosity-text { font-size: 16px; color: rgba(255,255,255,0.5); font-weight: 600; }
+.big-number { font-size: 56px; font-weight: 900; color: rgba(255,255,255,0.08); }
+.reveal-text { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+/* Backgrounds */
+.bg-dark { background: linear-gradient(135deg, #0a0a0a 0%, #141428 100%); }
+.bg-warm { background: linear-gradient(135deg, #1a0a00 0%, #281410 100%); }
+.bg-green { background: linear-gradient(135deg, #0a0a0a 0%, #0d2818 100%); }
+.bg-purple { background: linear-gradient(135deg, #0a0015 0%, #1a0a30 100%); }
+.bg-red { background: linear-gradient(135deg, #1a0505 0%, #2a0a0a 100%); }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>📱 Papierbox — Social Media Posts</h1>
+  <p>Click "Download" under each slide to save as 1080×1920 PNG (TikTok & Instagram Story size). Use in TikTok Photo mode or Instagram carousel.</p>
+</div>
+
+<!-- ============================================ -->
+<!-- POST 4 (EN): CURIOSITY — "I compared 5 stores" -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-header">
+    <div class="post-title">POST 1: "I compared 5 German supermarkets"</div>
+    <div class="post-lang">🇬🇧 ENGLISH</div>
+  </div>
+  <div class="post-caption">
+    <code>I compared prices at 5 German supermarkets for a week. The cheapest one might surprise you 👀 #germany #expat #groceries #supermarket #savemoney #lidl #aldi #penny #expatlife #livingingemany</code>
+  </div>
+  <div class="slides-row">
+
+    <div class="slide-wrapper">
+      <div class="slide bg-dark" id="p4s1">
+        <div class="slide-number">1/5</div>
+        <div class="emoji-big">🛒</div>
+        <div class="hook">I compared prices<br>at <em>5 German<br>supermarkets</em></div>
+        <div class="subhook">The results might surprise you →</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-dark" id="p4s1-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p4s1')">⬇ Download Slide 1</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-dark" id="p4s2">
+        <div class="slide-number">2/5</div>
+        <div class="section-title">🧈 Same product. Different prices.</div>
+        <div class="price-row best" style="position:relative;">
+          <div><div class="store-name">Kaufland</div><div class="product-name">WEIHENSTEPHAN Butter 250g</div></div>
+          <div style="text-align:right;"><div class="price-val green">€1.29</div><div class="price-orig">€2.89</div></div>
+          <div class="winner-badge">CHEAPEST</div>
+        </div>
+        <div class="price-row">
+          <div><div class="store-name">Penny</div><div class="product-name">KERRYGOLD Butter 250g</div></div>
+          <div style="text-align:right;"><div class="price-val">€1.69</div><div class="price-orig">€3.49</div></div>
+        </div>
+        <div class="price-row">
+          <div><div class="store-name">Aldi</div><div class="product-name">Butter 250g</div></div>
+          <div style="text-align:right;"><div class="price-val">€1.89</div></div>
+        </div>
+        <div style="margin-top:14px; font-size:13px; font-weight:700; color:rgba(255,255,255,0.4);">Same butter. €0.60 difference. Every week.</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-dark" id="p4s2-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p4s2')">⬇ Download Slide 2</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-warm" id="p4s3">
+        <div class="slide-number">3/5</div>
+        <div class="section-title">🤯 Biggest discounts this week</div>
+        <div class="discount-item">
+          <div><div class="d-name">MILKA Chocolate</div><div class="d-detail">Kaufland · €0.77</div></div>
+          <div class="d-pct">-61%</div>
+        </div>
+        <div class="discount-item">
+          <div><div class="d-name">MÜLLER Yogurt</div><div class="d-detail">Penny · €0.33</div></div>
+          <div class="d-pct">-63%</div>
+        </div>
+        <div class="discount-item">
+          <div><div class="d-name">LINDT Gold Bunny</div><div class="d-detail">Kaufland · €1.29</div></div>
+          <div class="d-pct">-61%</div>
+        </div>
+        <div class="discount-item">
+          <div><div class="d-name">MELITTA Coffee 500g</div><div class="d-detail">Penny · €5.99</div></div>
+          <div class="d-pct">-42%</div>
+        </div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-warm" id="p4s3-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p4s3')">⬇ Download Slide 3</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-dark" id="p4s4">
+        <div class="slide-number">4/5</div>
+        <div class="emoji-big">💸</div>
+        <div class="hook">That's <em>€50+</em><br>saved per month</div>
+        <div class="subhook">If you check prices before you shop</div>
+        <div class="curiosity-text" style="margin-top:20px;">But who has time to check<br>5 store websites every week?</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-dark" id="p4s4-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p4s4')">⬇ Download Slide 4</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-green" id="p4s5">
+        <div class="slide-number">5/5</div>
+        <div class="hook" style="font-size:20px;">So I built a tool that<br>does it <em>in 5 seconds</em></div>
+        <div class="cta-box">papierbox.eu</div>
+        <div class="cta-sub">Free · No signup · No ads</div>
+        <div style="margin-top:24px; text-align:left; width:100%;">
+          <div class="cta-feat"><span>🔍</span> Search any product</div>
+          <div class="cta-feat"><span>📍</span> Pick your city</div>
+          <div class="cta-feat"><span>💰</span> See every store's price, sorted</div>
+          <div class="cta-feat"><span>🇩🇪</span> Lidl · Aldi · Penny · Kaufland · Netto</div>
+        </div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-green" id="p4s5-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p4s5')">⬇ Download Slide 5</button>
+    </div>
+
+  </div>
+  <button class="download-all-btn" onclick="downloadAllSlides('p4', 5)">⬇ Download All 5 Slides</button>
+</div>
+
+<!-- ============================================ -->
+<!-- POST 5 (EN): "POV: You just moved to Germany" -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-header">
+    <div class="post-title">POST 2: "POV: You just moved to Germany"</div>
+    <div class="post-lang">🇬🇧 ENGLISH</div>
+  </div>
+  <div class="post-caption">
+    <code>POV: You moved to Germany and have no idea which supermarket is cheapest 😅 #pov #germany #expat #movingabroad #expatlife #groceries #supermarket #savemoney #livingabroad #expatgermany</code>
+  </div>
+  <div class="slides-row">
+
+    <div class="slide-wrapper">
+      <div class="slide bg-purple" id="p5s1">
+        <div class="slide-number">1/4</div>
+        <div class="emoji-big">😅</div>
+        <div class="hook">POV: You just<br>moved to<br><em>Germany</em></div>
+        <div class="subhook">and you have no idea which<br>supermarket is cheapest</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-purple" id="p5s1-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p5s1')">⬇ Download Slide 1</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-purple" id="p5s2">
+        <div class="slide-number">2/4</div>
+        <div style="text-align:left; width:100%;">
+          <div style="font-size:14px; font-weight:700; margin-bottom:18px; color:rgba(255,255,255,0.5);">You standing in Aldi thinking:</div>
+          <div style="font-size: 20px; font-weight:800; margin-bottom:14px;">"Is this cheap or am I<br>getting ripped off?"</div>
+          <div style="font-size: 20px; font-weight:800; margin-bottom:14px;">"Would this be cheaper<br>at Lidl?"</div>
+          <div style="font-size: 20px; font-weight:800; margin-bottom:14px;">"What even is Netto?"</div>
+          <div style="font-size: 20px; font-weight:800; margin-bottom:14px;">"Why does Penny have<br>3 types of butter?"</div>
+          <div style="font-size: 20px; font-weight:800; color: #22c55e;">"I miss knowing prices<br>from back home 😭"</div>
+        </div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-purple" id="p5s2-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p5s2')">⬇ Download Slide 2</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-purple" id="p5s3">
+        <div class="slide-number">3/4</div>
+        <div style="font-size:14px; font-weight:700; color:rgba(255,255,255,0.4); margin-bottom: 16px;">What if you could just...</div>
+        <div class="hook" style="font-size: 24px;">Type <em>"Butter"</em></div>
+        <div style="font-size:30px; margin:10px 0;">↓</div>
+        <div class="hook" style="font-size: 24px;">See <em>every store's</em> price</div>
+        <div style="font-size:30px; margin:10px 0;">↓</div>
+        <div class="hook" style="font-size: 24px;">Know the <em>cheapest</em> in 5 sec</div>
+        <div style="margin-top:20px; font-size:40px;">🤔</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-purple" id="p5s3-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p5s3')">⬇ Download Slide 3</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-green" id="p5s4">
+        <div class="slide-number">4/4</div>
+        <div style="font-size:14px; font-weight:700; color:rgba(255,255,255,0.4); margin-bottom:12px;">I built exactly that 👇</div>
+        <div class="cta-box">papierbox.eu</div>
+        <div class="cta-sub">Compare grocery prices across Germany</div>
+        <div style="margin-top:24px; text-align:left; width:100%;">
+          <div class="cta-feat"><span>✓</span> Covers Lidl, Aldi, Penny, Kaufland, Netto</div>
+          <div class="cta-feat"><span>✓</span> Real weekly offer prices</div>
+          <div class="cta-feat"><span>✓</span> Works in English & German</div>
+          <div class="cta-feat"><span>✓</span> 100% free, no signup</div>
+        </div>
+        <div style="margin-top:18px; font-size:14px; font-weight:800; color:rgba(255,255,255,0.5);">Built by an expat, for expats 🇩🇪</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-green" id="p5s4-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p5s4')">⬇ Download Slide 4</button>
+    </div>
+
+  </div>
+  <button class="download-all-btn" onclick="downloadAllSlides('p5', 4)">⬇ Download All 4 Slides</button>
+</div>
+
+<!-- ============================================ -->
+<!-- POST 6 (EN): "Stop buying these at the wrong store" -->
+<!-- ============================================ -->
+<div class="post-section">
+  <div class="post-header">
+    <div class="post-title">POST 3: "Stop buying these at the wrong store"</div>
+    <div class="post-lang">🇬🇧 ENGLISH</div>
+  </div>
+  <div class="post-caption">
+    <code>You're literally throwing money away if you buy these at the wrong store 💸 Save this for your next grocery run! #germany #expat #groceries #moneysaving #frugal #supermarket #expatlife #savemoney #budgeting</code>
+  </div>
+  <div class="slides-row">
+
+    <div class="slide-wrapper">
+      <div class="slide bg-red" id="p6s1">
+        <div class="slide-number">1/4</div>
+        <div style="font-size:48px; margin-bottom:16px;">🚫💸</div>
+        <div class="hook" style="font-size:26px;"><em>Stop</em> buying<br>these at the<br><em>wrong store</em></div>
+        <div class="subhook">You're losing money every week →</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-red" id="p6s1-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p6s1')">⬇ Download Slide 1</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-red" id="p6s2">
+        <div class="slide-number">2/4</div>
+        <div class="section-title">❌ Don't buy these here</div>
+        <div class="price-row" style="border-left: 3px solid #ef4444;">
+          <div><div class="store-name">🧈 Butter at Penny</div><div class="product-name">KERRYGOLD 250g</div></div>
+          <div style="text-align:right;"><div class="price-val" style="color:#ef4444;">€1.69</div></div>
+        </div>
+        <div class="price-row" style="border-left: 3px solid #22c55e;">
+          <div><div class="store-name">🧈 Butter at Kaufland</div><div class="product-name">WEIHENSTEPHAN 250g</div></div>
+          <div style="text-align:right;"><div class="price-val green">€1.29</div><div style="font-size:10px; color:#22c55e; font-weight:800;">SAVE €0.40</div></div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="price-row" style="border-left: 3px solid #ef4444;">
+          <div><div class="store-name">🍫 Chocolate anywhere</div><div class="product-name">MILKA 100g</div></div>
+          <div style="text-align:right;"><div class="price-val" style="color:#ef4444;">€1.99</div></div>
+        </div>
+        <div class="price-row" style="border-left: 3px solid #22c55e;">
+          <div><div class="store-name">🍫 Chocolate at Kaufland</div><div class="product-name">MILKA 85-95g</div></div>
+          <div style="text-align:right;"><div class="price-val green">€0.77</div><div style="font-size:10px; color:#22c55e; font-weight:800;">SAVE 61%</div></div>
+        </div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-red" id="p6s2-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p6s2')">⬇ Download Slide 2</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-dark" id="p6s3">
+        <div class="slide-number">3/4</div>
+        <div class="emoji-big">🧮</div>
+        <div class="hook" style="font-size:22px;">Checking 5 store<br>websites every week?</div>
+        <div style="font-size:40px; margin:14px 0; color:rgba(255,255,255,0.2);">😩</div>
+        <div class="hook" style="font-size:22px;"><em>Nobody</em> has time<br>for that</div>
+        <div class="subhook" style="margin-top:20px;">Unless there's a better way... →</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-dark" id="p6s3-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p6s3')">⬇ Download Slide 3</button>
+    </div>
+
+    <div class="slide-wrapper">
+      <div class="slide bg-green" id="p6s4">
+        <div class="slide-number">4/4</div>
+        <div class="hook" style="font-size:20px;">One search.<br>Every supermarket.<br><em>Cheapest first.</em></div>
+        <div class="cta-box">papierbox.eu</div>
+        <div class="cta-sub">Free forever · Works in English</div>
+        <div style="margin-top:20px; text-align:left; width:100%;">
+          <div class="cta-feat"><span>🔍</span> Search "Butter", "Kaffee", anything</div>
+          <div class="cta-feat"><span>⚡</span> Results in 5 seconds</div>
+          <div class="cta-feat"><span>💰</span> See which store wins this week</div>
+        </div>
+        <div style="margin-top:16px; font-size:14px; font-weight:800; color:rgba(255,255,255,0.4);">Save this. Thank me later. 😉</div>
+        <div class="logo-bottom">PAPIERBOX</div>
+      </div>
+      <div class="slide-hires bg-green" id="p6s4-hr"></div>
+      <button class="download-btn" onclick="downloadSlide('p6s4')">⬇ Download Slide 4</button>
+    </div>
+
+  </div>
+  <button class="download-all-btn" onclick="downloadAllSlides('p6', 4)">⬇ Download All 4 Slides</button>
+</div>
+
+<script>
+// Clone display slides into hi-res containers
+function setupHiRes() {
+  document.querySelectorAll('.slide-hires').forEach(hr => {
+    const displayId = hr.id.replace('-hr', '');
+    const display = document.getElementById(displayId);
+    if (display) {
+      hr.innerHTML = display.innerHTML;
+    }
+  });
+}
+setupHiRes();
+
+async function downloadSlide(slideId) {
+  const slide = document.getElementById(slideId);
+  if (!slide) return;
+
+  const btn = slide.parentElement.querySelector('.download-btn');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Generating...';
+
+  try {
+    const canvas = await html2canvas(slide, {
+      width: 1080,
+      height: 1920,
+      scale: 1080 / slide.offsetWidth,
+      useCORS: true,
+      backgroundColor: null,
+    });
+
+    const link = document.createElement('a');
+    link.download = `papierbox_${slideId}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.textContent = '✅ Downloaded!';
+    setTimeout(() => btn.textContent = originalText, 2000);
+  } catch(e) {
+    console.error(e);
+    btn.textContent = '❌ Error — try screenshot instead';
+    setTimeout(() => btn.textContent = originalText, 3000);
+  }
+}
+
+async function downloadAllSlides(postPrefix, count) {
+  for (let i = 1; i <= count; i++) {
+    await downloadSlide(`${postPrefix}s${i}`);
+    await new Promise(r => setTimeout(r, 500));
+  }
+}
+</script>
+
+</body>
+</html>
