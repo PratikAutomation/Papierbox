@@ -63,13 +63,22 @@ function pickBestMatch(candidates: Offer[], parsed: ParsedItem): Offer | null {
       const catEn = norm(offer.categoryEn || '');
       let score = 0;
 
-      if (pName.includes(q) || pNameEn.includes(qEn)) score += 200;
+      // Bidirectional match: query in name OR name in query
+      if (pName.includes(q) || pNameEn.includes(qEn) || q.includes(pName) || qEn.includes(pNameEn)) score += 200;
+      // Stem match: any word overlap between query and product name
+      const qWordsDe = q.split(/\s+/).filter(w => w.length >= 3);
+      const pWords = pName.split(/\s+/).filter(w => w.length >= 3);
+      const pWordsEn = pNameEn.split(/\s+/).filter(w => w.length >= 3);
+      const hasStemMatch = qWordsDe.some(qw => pWords.some(pw => pw.includes(qw) || qw.includes(pw))) ||
+                           qWordsDe.some(qw => pWordsEn.some(pw => pw.includes(qw) || qw.includes(pw)));
+      if (hasStemMatch && score === 0) score += 100;
+      // Category match
       if (cat.includes(q) || catEn.includes(qEn)) score += 150;
       if (parsed.brand && norm(offer.brand || '').includes(norm(parsed.brand))) score += 100;
 
       return { offer, score };
     })
-    .filter(s => s.score >= 100)
+    .filter(s => s.score >= 50)
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;

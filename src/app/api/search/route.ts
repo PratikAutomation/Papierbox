@@ -295,14 +295,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // STEP 3: PRECISE scoring — category-aware, word-boundary + Claude exclusion filtering
+    // STEP 3: PRECISE scoring — score with BOTH normalized and original terms, take best
+    // This is critical: Claude normalizes "milk 3.5 fat 2 packets" → "Milch"
+    // Scoring with "Milch" matches German products, scoring with original catches English matches
+    const searchTermEn = normalized.normalized_en || product;
     const scored = candidates
       .filter(offer => {
         if (excludeTerms.length === 0) return true;
         const pName = norm(offer.productName || '').toLowerCase();
         return !excludeTerms.some(ex => pName.includes(ex.toLowerCase()));
       })
-      .map(offer => ({ offer, score: scoreProduct(product, offer) }))
+      .map(offer => {
+        // Score with all available terms, take the best score
+        const scoreOriginal = scoreProduct(product, offer);
+        const scoreNormDE = scoreProduct(searchTerm, offer);
+        const scoreNormEN = scoreProduct(searchTermEn, offer);
+        return { offer, score: Math.max(scoreOriginal, scoreNormDE, scoreNormEN) };
+      })
       .filter(s => s.score >= 30)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
