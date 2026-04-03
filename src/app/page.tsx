@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Offer, SearchResult, CompareResult } from "@/lib/types";
+import { Offer, SearchResult, CompareResult, StoreRanking, StoreItemDetail } from "@/lib/types";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -576,14 +576,16 @@ export default function Home() {
         {/* Results Section */}
         {hasSearched && (
           <section ref={resultsRef} className="max-w-5xl mx-auto px-6 scroll-mt-24">
-            {loading ? (
+            {mode === "search" && loading && (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <span className="material-symbols-outlined text-5xl text-primary animate-spin">
                   progress_activity
                 </span>
                 <p className="text-on-surface-variant font-bold text-lg">{l.findingPrices}</p>
               </div>
-            ) : result && (result.totalOffers > 0 || result.totalRegular > 0) ? (
+            )}
+
+            {mode === "search" && !loading && result && (result.totalOffers > 0 || result.totalRegular > 0) && (
               <>
                 {/* Summary Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 bg-white border-4 border-outline p-8 rounded-[2.5rem] shadow-neo">
@@ -709,7 +711,9 @@ export default function Home() {
                   )}
                 </div>
               </>
-            ) : (
+            )}
+
+            {mode === "search" && !loading && !(result && (result.totalOffers > 0 || result.totalRegular > 0)) && (
               <div className="flex flex-col items-center justify-center py-20 gap-6 bg-white border-4 border-outline rounded-[2.5rem] shadow-neo">
                 <span className="text-8xl">🔍</span>
                 <p className="text-on-surface font-headline font-black text-3xl">
@@ -718,9 +722,67 @@ export default function Home() {
                 <p className="text-on-surface-variant font-bold text-lg">{l.trySearching}</p>
               </div>
             )}
+
+            {mode === "list" && compareLoading && (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <span className="material-symbols-outlined text-5xl text-primary animate-spin">
+                  progress_activity
+                </span>
+                <p className="font-headline font-bold text-xl text-on-surface">
+                  {lang === "en" ? "Crunching numbers across 5 stores..." : "Preise werden verglichen..."}
+                </p>
+                <p className="text-on-surface-variant font-semibold text-sm">
+                  {lang === "en" ? "This takes ~5 seconds" : "Das dauert ~5 Sekunden"}
+                </p>
+              </div>
+            )}
+
+            {mode === "list" && compareResult && !compareLoading && (
+              <div ref={compareResultsRef} className="scroll-mt-24">
+                {/* Summary */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 bg-white border-4 border-outline p-8 rounded-[2.5rem] shadow-neo">
+                  <div>
+                    <h2 className="font-headline font-black text-3xl text-on-surface mb-1">
+                      {lang === "en" ? `Your Grocery List in ${getCityLabel(city)}` : `Deine Einkaufsliste in ${getCityLabel(city)}`}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-3 w-3 rounded-full bg-primary animate-pulse"></span>
+                      <p className="text-on-surface-variant font-bold text-lg uppercase tracking-tight">
+                        {compareResult.total_items} {lang === "en" ? "items compared across 5 stores" : "Artikel in 5 Laden verglichen"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Store Ranking */}
+                <div className="flex flex-col gap-3 mb-8">
+                  {compareResult.store_rankings.map((ranking, index) => (
+                    <StoreRankCard
+                      key={ranking.store_id}
+                      ranking={ranking}
+                      index={index}
+                      isWinner={index === 0}
+                      maxCost={Math.max(...compareResult.store_rankings.map(r => r.total_cost))}
+                    />
+                  ))}
+                </div>
+
+                {/* Item Breakdown for winner */}
+                <ItemBreakdown ranking={compareResult.store_rankings[0]} lang={lang} />
+              </div>
+            )}
           </section>
         )}
       </main>
+
+      {/* Celebration Popup */}
+      {showCelebration && compareResult && (
+        <CelebrationPopup
+          result={compareResult}
+          lang={lang}
+          onClose={() => setShowCelebration(false)}
+        />
+      )}
 
       {/* Footer */}
       <Footer lang={lang} />
@@ -886,6 +948,226 @@ function RegularPriceCard({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CELEBRATION POPUP
+// ============================================================
+
+function CelebrationPopup({
+  result,
+  lang,
+  onClose,
+}: {
+  result: CompareResult;
+  lang: Lang;
+  onClose: () => void;
+}) {
+  const winner = result.store_rankings[0];
+  if (!winner) return null;
+  const worst = result.store_rankings[result.store_rankings.length - 1];
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white border-4 border-outline rounded-[2.5rem] p-12 max-w-lg w-full text-center shadow-[8px_8px_0px_0px_#1a1c1c] relative animate-[popIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-4 right-6 text-2xl text-on-surface-variant hover:text-on-surface">
+          &times;
+        </button>
+        <div className="text-4xl mb-4 animate-bounce">&#127881; &#127882; &#10024;</div>
+        <div className="font-headline font-extrabold text-base uppercase tracking-[3px] text-primary mb-1">
+          {lang === "en" ? "THIS WEEK, GO TO" : "DIESE WOCHE, GEH ZU"}
+        </div>
+        <div className="font-headline font-black text-5xl md:text-6xl tracking-tighter text-on-surface mb-5">
+          {winner.store_name.toUpperCase()}
+        </div>
+        <div className="inline-flex items-baseline gap-1 bg-primary text-white px-7 py-3 rounded-full font-headline font-black text-3xl border-[3px] border-outline shadow-neo-hover mb-4">
+          <span className="text-xl">&euro;</span>{winner.total_cost.toFixed(2)}
+        </div>
+        {result.savings_vs_worst > 0 && (
+          <div className="flex items-center justify-center gap-2 bg-amber-50 text-amber-800 px-5 py-2.5 rounded-full font-extrabold text-sm border-2 border-amber-400 mb-6 mx-auto w-fit">
+            <span className="material-symbols-outlined text-lg">savings</span>
+            {lang === "en"
+              ? `You save \u20AC${result.savings_vs_worst.toFixed(2)} vs ${worst?.store_name}`
+              : `Du sparst \u20AC${result.savings_vs_worst.toFixed(2)} vs ${worst?.store_name}`
+            }
+          </div>
+        )}
+        <div className="text-on-surface-variant text-sm font-semibold mb-6">
+          <strong className="text-primary">{result.total_items}</strong> {lang === "en" ? "items compared across 5 stores" : "Artikel in 5 Laden verglichen"}
+        </div>
+        <button
+          onClick={onClose}
+          className="px-8 py-4 bg-on-surface text-white font-headline font-black rounded-full border-2 border-outline shadow-neo-hover hover:translate-y-[-2px] hover:shadow-neo transition-all inline-flex items-center gap-2"
+        >
+          {lang === "en" ? "SEE FULL BREAKDOWN" : "DETAILS ANZEIGEN"}
+          <span className="material-symbols-outlined text-lg">arrow_downward</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// STORE RANKING CARD
+// ============================================================
+
+function StoreRankCard({
+  ranking,
+  index,
+  isWinner,
+  maxCost,
+}: {
+  ranking: StoreRanking;
+  index: number;
+  isWinner: boolean;
+  maxCost: number;
+}) {
+  const medals = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
+  const barPercent = maxCost > 0 ? Math.round((ranking.total_cost / maxCost) * 100) : 0;
+  const barColors = ['#22c55e', '#94a3b8', '#f97316', '#d1d5db', '#d1d5db'];
+
+  return (
+    <div className={`flex items-center gap-4 px-6 py-5 bg-white rounded-[2rem] transition-all hover:translate-y-[-2px] ${
+      isWinner
+        ? "border-4 border-outline shadow-neo"
+        : "border-2 border-outline/10 hover:border-outline hover:shadow-neo-hover"
+    }`}>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl font-black flex-shrink-0 ${
+        index === 0 ? "bg-amber-100 border-2 border-amber-400" :
+        index === 1 ? "bg-slate-100 border-2 border-slate-400" :
+        index === 2 ? "bg-orange-100 border-2 border-orange-400" :
+        "bg-gray-100 border-2 border-gray-300 font-headline text-on-surface-variant"
+      }`}>
+        {index < 3 ? medals[index] : index + 1}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-headline font-extrabold text-lg flex items-center gap-2">
+          {ranking.store_name}
+          {isWinner && (
+            <span className="bg-primary text-white text-xs font-black px-2.5 py-0.5 rounded-full border-2 border-outline uppercase tracking-wider">
+              Best Pick
+            </span>
+          )}
+        </div>
+        <div className="text-primary font-bold text-xs">
+          {ranking.offer_count} {ranking.offer_count === 1 ? "item on sale" : "items on sale"} this week
+        </div>
+      </div>
+      <div className="hidden sm:block flex-1 min-w-0">
+        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-1000"
+            style={{ width: `${barPercent}%`, backgroundColor: barColors[index] || '#d1d5db' }}
+          />
+        </div>
+      </div>
+      <div className={`font-headline font-black text-2xl flex-shrink-0 ${isWinner ? "text-primary" : ""}`}>
+        &euro;{ranking.total_cost.toFixed(2)}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ITEM BREAKDOWN
+// ============================================================
+
+function ItemBreakdown({
+  ranking,
+  lang,
+}: {
+  ranking: StoreRanking;
+  lang: Lang;
+}) {
+  const offers = ranking.items.filter(i => i.type === 'offer');
+  const typical = ranking.items.filter(i => i.type !== 'offer');
+
+  return (
+    <div className="bg-white border-4 border-outline rounded-[2.5rem] overflow-hidden shadow-neo">
+      <div className="px-7 py-5 border-b-[3px] border-outline flex items-center justify-between">
+        <h3 className="font-headline font-extrabold text-xl flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary">receipt_long</span>
+          {lang === "en" ? `Item breakdown at ${ranking.store_name}` : `Artikelaufstellung bei ${ranking.store_name}`}
+        </h3>
+        <span className="font-headline font-extrabold text-sm text-on-surface-variant">
+          {ranking.items.length} {lang === "en" ? "items" : "Artikel"}
+        </span>
+      </div>
+
+      {/* Offer items */}
+      <ul className="divide-y divide-outline/5">
+        {offers.map((item, i) => (
+          <li key={`offer-${i}`} className="flex items-center gap-4 px-7 py-4 hover:bg-surface transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
+              <span className="material-symbols-outlined text-lg">local_fire_department</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm">{item.name_de || item.name}{item.qty > 1 ? ` x${item.qty}` : ''}</div>
+              <div className="text-xs font-semibold text-on-surface-variant">{item.unit}{item.valid_to ? ` \u00B7 Valid until ${item.valid_to}` : ''}</div>
+            </div>
+            <span className="bg-primary text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full border-[1.5px] border-outline uppercase flex-shrink-0">
+              {lang === "en" ? "ON SALE" : "ANGEBOT"}
+            </span>
+            <div className="text-right flex-shrink-0">
+              {item.original_price && (
+                <div className="text-xs text-on-surface-variant/40 line-through font-semibold">&euro;{item.original_price.toFixed(2)}</div>
+              )}
+              <div className="font-headline font-black text-lg">&euro;{item.price.toFixed(2)}</div>
+              {item.savings && item.savings > 0 && (
+                <div className="text-xs text-primary font-extrabold">save &euro;{item.savings.toFixed(2)}</div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Divider */}
+      {offers.length > 0 && typical.length > 0 && (
+        <div className="flex items-center gap-3 px-7 py-3 bg-surface">
+          <div className="flex-1 border-t-2 border-dashed border-outline/10" />
+          <span className="text-xs font-extrabold uppercase tracking-widest text-on-surface-variant whitespace-nowrap">
+            {lang === "en" ? "Typical prices" : "Typische Preise"}
+          </span>
+          <div className="flex-1 border-t-2 border-dashed border-outline/10" />
+        </div>
+      )}
+
+      {/* Typical price items — SAME visual style as offers (no gray/muted) */}
+      <ul className="divide-y divide-outline/5">
+        {typical.map((item, i) => (
+          <li key={`typical-${i}`} className="flex items-center gap-4 px-7 py-4 hover:bg-surface transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
+              <span className="material-symbols-outlined text-lg">shopping_basket</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm">{item.name_de || item.name}{item.qty > 1 ? ` x${item.qty}` : ''}</div>
+              <div className="text-xs font-semibold text-on-surface-variant">{item.unit}</div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="font-headline font-black text-lg">&euro;{item.price.toFixed(2)}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Total */}
+      <div className="flex items-center justify-between px-7 py-5 bg-on-surface text-white">
+        <div>
+          <div className="font-headline font-extrabold text-lg">
+            {lang === "en" ? `TOTAL AT ${ranking.store_name.toUpperCase()}` : `GESAMT BEI ${ranking.store_name.toUpperCase()}`}
+          </div>
+          <div className="text-xs opacity-60 font-semibold">{ranking.items.length} {lang === "en" ? "items" : "Artikel"}</div>
+        </div>
+        <div className="font-headline font-black text-3xl">&euro;{ranking.total_cost.toFixed(2)}</div>
       </div>
     </div>
   );

@@ -52,3 +52,8 @@ body {
 .shadow-neo-hover {
   box-shadow: 2px 2px 0px 0px #1a1c1c;
 }
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
