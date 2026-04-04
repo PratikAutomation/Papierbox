@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Offer, ParsedItem, CompareResult } from '@/lib/types';
 import { normalizeItems, ocrPhoto, estimatePrices } from '@/lib/claude-normalize';
 import { buildPriceMatrix } from '@/lib/price-matrix';
 
 const STORE_IDS = ['1', '2', '3', '4', '5'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
+// Service key client for writing price_estimates (anon key should NOT have write access)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
+const supabaseWriteClient = supabaseServiceKey
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, supabaseServiceKey)
+  : null;
 
 function sanitizeInput(input: string): string {
   return input.trim().slice(0, 5000).replace(/<[^>]*>/g, '');
@@ -115,6 +123,10 @@ export async function POST(request: NextRequest) {
 
     if (rawImage) {
       const stripped = rawImage.replace(/^data:image\/\w+;base64,/, '');
+      // Validate image size (base64 is ~4/3 of original bytes)
+      if (stripped.length > MAX_IMAGE_BYTES * 1.37) {
+        return NextResponse.json({ error: 'Image too large (max 5MB)' }, { status: 400 });
+      }
       const ocrItems = await ocrPhoto(stripped);
       itemStrings = ocrItems;
     }
@@ -211,10 +223,12 @@ export async function POST(request: NextRequest) {
         }))
       );
 
-      // Fire and forget - don't await
-      void supabase.from('price_estimates').upsert(rows, {
-        onConflict: 'product_normalized,store_id',
-      });
+      // Fire and forget - use service key client for writes
+      if (supabaseWriteClient) {
+        void supabaseWriteClient.from('price_estimates').upsert(rows, {
+          onConflict: 'product_normalized,store_id',
+        });
+      }
     }
 
     // Merge cached + fresh estimates
