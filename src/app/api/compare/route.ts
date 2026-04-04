@@ -61,19 +61,34 @@ function pickBestMatch(candidates: Offer[], parsed: ParsedItem): Offer | null {
       const pNameEn = norm(offer.productNameEn || '');
       const cat = norm(offer.category || '');
       const catEn = norm(offer.categoryEn || '');
+      const pNameWords = pName.split(/[\s,./\-_()+]+/).filter(w => w.length >= 2);
+      const pNameEnWords = pNameEn.split(/[\s,./\-_()+]+/).filter(w => w.length >= 2);
       let score = 0;
 
-      // Bidirectional match: query in name OR name in query
-      if (pName.includes(q) || pNameEn.includes(qEn) || q.includes(pName) || qEn.includes(pNameEn)) score += 200;
-      // Stem match: any word overlap between query and product name
+      // Standalone word match (best): "Milch" is a whole word in "Haltbare Milch"
+      const qStandalone = pNameWords.some(pw => pw === q) || pNameEnWords.some(pw => pw === qEn);
+      // Compound suffix: "schokolade" at end of "tafelschokolade"
+      const qSuffix = !qStandalone && q.length >= 4 && (
+        pNameWords.some(pw => pw.endsWith(q) && pw !== q) ||
+        pNameEnWords.some(pw => pw.endsWith(qEn) && pw !== qEn));
+      // Substring of compound word (weak): "milch" in "milchreis"
+      const qSubstring = !qStandalone && !qSuffix && (pName.includes(q) || pNameEn.includes(qEn));
+
+      if (qStandalone) score += 250;
+      else if (qSuffix) score += 200;
+      else if (qSubstring) score += 50;
+      else if (q.includes(pName) || qEn.includes(pNameEn)) score += 200; // name inside query
+
+      // Stem match: word-level overlap with length check
       const qWordsDe = q.split(/\s+/).filter(w => w.length >= 3);
-      const pWords = pName.split(/\s+/).filter(w => w.length >= 3);
-      const pWordsEn = pNameEn.split(/\s+/).filter(w => w.length >= 3);
-      const hasStemMatch = qWordsDe.some(qw => pWords.some(pw => pw.includes(qw) || qw.includes(pw))) ||
-                           qWordsDe.some(qw => pWordsEn.some(pw => pw.includes(qw) || qw.includes(pw)));
+      const hasStemMatch = qWordsDe.some(qw =>
+        pNameWords.some(pw => (pw === qw) || ((pw.includes(qw) || qw.includes(pw)) && Math.abs(pw.length - qw.length) <= 3)) ||
+        pNameEnWords.some(pw => (pw === qw) || ((pw.includes(qw) || qw.includes(pw)) && Math.abs(pw.length - qw.length) <= 3))
+      );
       if (hasStemMatch && score === 0) score += 100;
+
       // Category match
-      if (cat.includes(q) || catEn.includes(qEn)) score += 150;
+      if (cat.includes(q) || catEn.includes(qEn)) score += 30;
       if (parsed.brand && norm(offer.brand || '').includes(norm(parsed.brand))) score += 100;
 
       return { offer, score };

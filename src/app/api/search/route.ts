@@ -38,37 +38,67 @@ function scoreProduct(query: string, offer: Offer): number {
   const cat = norm(offer.category || '');
   const catEn = norm(offer.categoryEn || '');
 
+  // Split product names into individual words for word-boundary checks
+  const pNameWords = pName.split(/[\s,./\-_()+]+/).filter(w => w.length >= 2);
+  const pNameEnWords = pNameEn.split(/[\s,./\-_()+]+/).filter(w => w.length >= 2);
+
   let score = 0;
 
   // ===================================================
-  // TIER 1: EXACT PRODUCT MATCH (highest priority)
-  // Full query appears in product name OR product name appears in query
-  // "mango" in "Mango" ✓, "mangos" contains "mango" ✓
+  // TIER 1: PRODUCT NAME MATCH
+  // Distinguish between:
+  //   a) Query IS a standalone word in product name (best): "Milch" in "Haltbare Milch" → 250pts
+  //   b) Query is a suffix of a compound word: "schokolade" in "Tafelschokolade" → 200pts
+  //      German compounds: Tafelschokolade = Tafel+Schokolade, still IS chocolate
+  //   c) Query is prefix/middle of compound (weak): "milch" in "Milchreis" → 50pts
+  //      Milchreis is NOT milk, Buttermilch is NOT butter
+  //   d) Product name is contained in query: "mango" contains product "Mango" → 200pts
   // ===================================================
-  if (pName.includes(q) || pNameEn.includes(q) || q.includes(pName) || q.includes(pNameEn)) {
-    score += 200;
+  const qIsStandaloneInName = pNameWords.some(pw => pw === q) || pNameEnWords.some(pw => pw === q);
+  // German compound suffix: query is the tail of a compound word (Tafelschokolade ends with schokolade)
+  const qIsSuffixInName = !qIsStandaloneInName && q.length >= 4 && (
+    pNameWords.some(pw => pw.endsWith(q) && pw !== q) ||
+    pNameEnWords.some(pw => pw.endsWith(q) && pw !== q)
+  );
+  const nameIsInQuery = pNameWords.length <= 2 && (q.includes(pName) || q.includes(pNameEn));
+  const qIsSubstringInName = !qIsStandaloneInName && !qIsSuffixInName && (pName.includes(q) || pNameEn.includes(q));
+
+  if (qIsStandaloneInName || nameIsInQuery) {
+    score += 250; // Strong: query is a whole word in name, or name is inside query
+  } else if (qIsSuffixInName) {
+    score += 200; // Good: compound suffix (Tafelschokolade → IS schokolade)
+  } else if (qIsSubstringInName) {
+    score += 50; // Weak: compound prefix/middle (Milchreis, Buttermilch)
   }
 
   // ===================================================
-  // TIER 2: CATEGORY MATCH (most important for generic searches)
+  // TIER 2: CATEGORY MATCH
   // User searches "butter" → category IS "butter" or "dairy"
-  // This is what separates real butter from butter croissants
+  // Exact category match (cat === q) is stronger than broad parent category
+  // "Milchprodukte" contains "milch" but is a broad umbrella category
   // ===================================================
-  const categoryMatch =
-    cat.includes(q) || catEn.includes(q) ||
-    qWords.some(w => cat === w || catEn === w) ||
-    qWords.some(w => cat.includes(w) && w.length >= 4) ||
-    qWords.some(w => catEn.includes(w) && w.length >= 4);
+  const exactCategoryMatch =
+    cat === q || catEn === q ||
+    qWords.some(w => cat === w || catEn === w);
 
-  if (categoryMatch) {
-    score += 150;
+  const broadCategoryMatch = !exactCategoryMatch && (
+    cat.includes(q) || catEn.includes(q) ||
+    qWords.some(w => cat.includes(w) && w.length >= 4) ||
+    qWords.some(w => catEn.includes(w) && w.length >= 4)
+  );
+
+  const categoryMatch = exactCategoryMatch || broadCategoryMatch;
+
+  if (exactCategoryMatch) {
+    score += 150; // Category IS the product (e.g. category="Butter")
+  } else if (broadCategoryMatch) {
+    score += 30; // Broad parent category (e.g. "Milchprodukte" for milk search)
   }
 
   // ===================================================
   // TIER 3: BRAND MATCH
   // User searches "kerrygold" or "milka"
   // Must be exact brand match, not substring
-  // "milk" should NOT match brand "milka"
   // ===================================================
   const brandWords = brand.split(/\s+/);
   const brandMatch = qWords.some(w =>
@@ -80,49 +110,118 @@ function scoreProduct(query: string, offer: Offer): number {
 
   // ===================================================
   // TIER 4: PRODUCT NAME WORD MATCH
-  // Check how many query words appear in product name
-  // Handles stems: "mangos" matches "mango", "tomatoes" matches "tomate"
+  // Check query words against individual product name words
+  // Standalone word match (word boundary): 40pts per word
+  // Compound/stem match: 15pts per word
   // ===================================================
   let nameWordMatches = 0;
   for (const w of qWords) {
-    // Word boundary check: "milk" matches "Milk 1L" but not "Milka"
-    const wbRegex = new RegExp(`(?:^|[\\s,./\\-_()])${w}(?:[\\s,./\\-_()]|$)`, 'i');
-    // Also check stem overlap: shorter of (query word, product word) is substring of longer
-    const stemMatch = pName.split(/\s+/).some(pw => pw.includes(w) || w.includes(pw)) ||
-                      pNameEn.split(/\s+/).some(pw => pw.includes(w) || w.includes(pw));
-    if (wbRegex.test(pName) || wbRegex.test(pNameEn) || stemMatch) {
+    const standaloneMatch = pNameWords.some(pw => pw === w) || pNameEnWords.some(pw => pw === w);
+    // Stem: one contains the other, but only when lengths are close (within 3 chars)
+    const stemMatch = !standaloneMatch && (
+      pNameWords.some(pw => (pw.includes(w) || w.includes(pw)) && Math.abs(pw.length - w.length) <= 3) ||
+      pNameEnWords.some(pw => (pw.includes(w) || w.includes(pw)) && Math.abs(pw.length - w.length) <= 3)
+    );
+    if (standaloneMatch) {
       nameWordMatches++;
-      score += 30;
+      score += 40;
+    } else if (stemMatch) {
+      nameWordMatches++;
+      score += 15;
     }
   }
 
   // ===================================================
-  // STRICT FILTER: For generic product searches, category MUST match.
-  // If it doesn't → score = 0. No exceptions.
-  //
-  // "butter" → category must contain "butter" or "dairy/milchprodukte"
-  // "milk" → category must contain "milk" or "milch" or "dairy"
-  // "Buttered Vegetables" (Frozen) → ZERO. Not butter.
-  // "Milka Chocolate" (Sweets) → ZERO. Not milk.
+  // STRICT FILTER: For generic product searches, product name MUST contain
+  // the query as a standalone word, OR category must be an exact match.
+  // Broad parent categories (Milchprodukte, Süßwaren) are NOT enough alone.
   // ===================================================
-  const commonProducts = [
-    'butter', 'milk', 'milch', 'bread', 'brot', 'cheese', 'kaese',
-    'coffee', 'kaffee', 'tea', 'tee', 'sugar', 'zucker', 'flour', 'mehl',
-    'rice', 'reis', 'pasta', 'nudeln', 'oil', 'oel', 'water', 'wasser',
-    'juice', 'saft', 'yogurt', 'joghurt', 'cream', 'sahne', 'egg', 'eier',
-    'chicken', 'haehnchen', 'beef', 'rind', 'pork', 'schwein', 'fish', 'fisch',
-    'salmon', 'lachs', 'chocolate', 'schokolade', 'chips', 'ice', 'eis',
-    'beer', 'bier', 'wine', 'wein', 'sekt', 'vodka', 'whisky',
-    'ham', 'schinken', 'sausage', 'wurst', 'salami',
-  ];
+  const commonProducts: Record<string, string[]> = {
+    // query → acceptable categories (normalized). Product is also accepted if name contains query as standalone word.
+    butter: ['butter', 'milchprodukte', 'dairy', 'brotaufstrich', 'spreads'],
+    milk: ['milch', 'milk', 'milchprodukte', 'dairy', 'getraenke', 'beverages'],
+    milch: ['milch', 'milk', 'milchprodukte', 'dairy', 'getraenke', 'beverages'],
+    bread: ['brot', 'bread', 'backwaren', 'bakery'],
+    brot: ['brot', 'bread', 'backwaren', 'bakery'],
+    cheese: ['kaese', 'cheese', 'milchprodukte', 'dairy'],
+    kaese: ['kaese', 'cheese', 'milchprodukte', 'dairy'],
+    coffee: ['kaffee', 'coffee', 'getraenke', 'beverages', 'heissgetraenke'],
+    kaffee: ['kaffee', 'coffee', 'getraenke', 'beverages', 'heissgetraenke'],
+    tea: ['tee', 'tea', 'getraenke', 'beverages', 'heissgetraenke'],
+    tee: ['tee', 'tea', 'getraenke', 'beverages', 'heissgetraenke'],
+    sugar: ['zucker', 'sugar', 'backzutaten', 'baking'],
+    zucker: ['zucker', 'sugar', 'backzutaten', 'baking'],
+    flour: ['mehl', 'flour', 'backzutaten', 'baking'],
+    mehl: ['mehl', 'flour', 'backzutaten', 'baking'],
+    rice: ['reis', 'rice', 'beilagen', 'sides'],
+    reis: ['reis', 'rice', 'beilagen', 'sides'],
+    pasta: ['nudeln', 'pasta', 'teigwaren', 'noodles'],
+    nudeln: ['nudeln', 'pasta', 'teigwaren', 'noodles'],
+    oil: ['oel', 'oil', 'speiseoel', 'cooking'],
+    oel: ['oel', 'oil', 'speiseoel', 'cooking'],
+    water: ['wasser', 'water', 'getraenke', 'beverages'],
+    wasser: ['wasser', 'water', 'getraenke', 'beverages'],
+    juice: ['saft', 'juice', 'getraenke', 'beverages'],
+    saft: ['saft', 'juice', 'getraenke', 'beverages'],
+    yogurt: ['joghurt', 'yogurt', 'milchprodukte', 'dairy'],
+    joghurt: ['joghurt', 'yogurt', 'milchprodukte', 'dairy'],
+    cream: ['sahne', 'cream', 'milchprodukte', 'dairy'],
+    sahne: ['sahne', 'cream', 'milchprodukte', 'dairy'],
+    egg: ['eier', 'egg', 'eggs'],
+    eier: ['eier', 'egg', 'eggs'],
+    chicken: ['haehnchen', 'chicken', 'gefluegel', 'poultry', 'fleisch', 'meat'],
+    haehnchen: ['haehnchen', 'chicken', 'gefluegel', 'poultry', 'fleisch', 'meat'],
+    beef: ['rind', 'beef', 'fleisch', 'meat'],
+    rind: ['rind', 'beef', 'fleisch', 'meat'],
+    pork: ['schwein', 'pork', 'fleisch', 'meat'],
+    schwein: ['schwein', 'pork', 'fleisch', 'meat'],
+    fish: ['fisch', 'fish', 'meeresfrüchte', 'seafood'],
+    fisch: ['fisch', 'fish', 'meeresfrüchte', 'seafood'],
+    salmon: ['lachs', 'salmon', 'fisch', 'fish', 'meeresfrüchte', 'seafood'],
+    lachs: ['lachs', 'salmon', 'fisch', 'fish', 'meeresfrüchte', 'seafood'],
+    chocolate: ['schokolade', 'chocolate', 'suesswaren', 'sweets', 'suessigkeiten', 'confectionery'],
+    schokolade: ['schokolade', 'chocolate', 'suesswaren', 'sweets', 'suessigkeiten', 'confectionery'],
+    chips: ['chips', 'snacks', 'knabberartikel'],
+    ice: ['eis', 'ice', 'tiefkuehl', 'frozen'],
+    eis: ['eis', 'ice', 'tiefkuehl', 'frozen'],
+    beer: ['bier', 'beer', 'getraenke', 'beverages', 'alkohol', 'alcohol'],
+    bier: ['bier', 'beer', 'getraenke', 'beverages', 'alkohol', 'alcohol'],
+    wine: ['wein', 'wine', 'getraenke', 'beverages', 'alkohol', 'alcohol'],
+    wein: ['wein', 'wine', 'getraenke', 'beverages', 'alkohol', 'alcohol'],
+    sekt: ['sekt', 'sparkling', 'getraenke', 'beverages', 'alkohol', 'alcohol'],
+    vodka: ['vodka', 'spirituosen', 'spirits', 'alkohol', 'alcohol'],
+    whisky: ['whisky', 'spirituosen', 'spirits', 'alkohol', 'alcohol'],
+    ham: ['schinken', 'ham', 'wurst', 'fleisch', 'meat', 'aufschnitt', 'deli'],
+    schinken: ['schinken', 'ham', 'wurst', 'fleisch', 'meat', 'aufschnitt', 'deli'],
+    sausage: ['wurst', 'sausage', 'fleisch', 'meat', 'aufschnitt', 'deli'],
+    wurst: ['wurst', 'sausage', 'fleisch', 'meat', 'aufschnitt', 'deli'],
+    salami: ['salami', 'wurst', 'fleisch', 'meat', 'aufschnitt', 'deli'],
+  };
 
-  const isGenericSearch = qWords.length <= 2 && qWords.some(w => commonProducts.includes(w));
+  const genericKey = qWords.find(w => commonProducts[w]);
+  const isGenericSearch = qWords.length <= 2 && !!genericKey;
 
-  if (isGenericSearch && !categoryMatch) {
-    // Generic product search but category doesn't match → KILL IT
-    // "butter" search + "Frozen" category = 0
-    // "milk" search + "Sweets" category = 0
-    return 0;
+  if (isGenericSearch) {
+    const acceptableCats = commonProducts[genericKey!];
+    const catAcceptable = acceptableCats.some(ac => cat.includes(ac) || catEn.includes(ac));
+    const nameHasQuery = qIsStandaloneInName || qIsSuffixInName || qIsSubstringInName;
+
+    if (!catAcceptable && !nameHasQuery) {
+      // Category doesn't match AND query isn't in product name at all → kill
+      return 0;
+    }
+
+    if (!catAcceptable && nameHasQuery) {
+      // Query appears in name but category is wrong → heavily penalize
+      // e.g. "Butter Croissant" (Bakery), "Butter Chicken" (Ready Meals)
+      return Math.min(score, 25);
+    }
+
+    // Category is acceptable but query is NOT in product name at all → penalize heavily
+    // e.g. "Ehrmann Almighurt" (yogurt in Milchprodukte) appearing for "milk" search
+    if (catAcceptable && !nameHasQuery) {
+      return Math.min(score, 20);
+    }
   }
 
   // ===================================================
@@ -132,8 +231,8 @@ function scoreProduct(query: string, offer: Offer): number {
   if (qWords.length > 1) {
     const totalMatches = nameWordMatches + (brandMatch ? 1 : 0) + (categoryMatch ? 1 : 0);
     const ratio = totalMatches / qWords.length;
-    if (ratio >= 0.8) score += 50; // Almost all words match
-    else if (ratio < 0.3) score = Math.floor(score * 0.2); // Very few words match
+    if (ratio >= 0.8) score += 50;
+    else if (ratio < 0.3) score = Math.floor(score * 0.2);
   }
 
   return score;
