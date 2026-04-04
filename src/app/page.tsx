@@ -201,6 +201,30 @@ export default function Home() {
 
   const l = t[lang];
 
+  function handleSubscribe() {
+    if (!alertEmail.includes("@")) return;
+    // 1. Save to Supabase
+    fetch("/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: alertEmail, city, lang }),
+    }).catch(() => {});
+    // 2. Send email notification via Web3Forms
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: "79d8e709-6ea4-4a6c-85d5-d2aaf91b7641",
+        subject: `[Papierbox] New Subscriber: ${alertEmail}`,
+        from_name: "Papierbox Alerts",
+        name: "Subscriber Alert",
+        email: alertEmail,
+        message: `New email subscriber!\n\nEmail: ${alertEmail}\nCity: ${city}\nLanguage: ${lang}\nTime: ${new Date().toISOString()}`,
+      }),
+    }).catch(() => {});
+    setAlertSubmitted(true);
+  }
+
   useEffect(() => {
     if (query.length < 1) {
       setSuggestions([]);
@@ -681,26 +705,11 @@ export default function Home() {
                           placeholder={l.alertPlaceholder}
                           className="flex-1 px-6 py-4 rounded-full bg-white/10 border-2 border-white/20 text-white font-bold placeholder:text-white/30 focus:border-[#22c55e] focus:ring-0 outline-none transition-all"
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" && alertEmail.includes("@")) {
-                              fetch("/api/subscribe", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ email: alertEmail, city, lang }),
-                              }).catch(() => {});
-                              setAlertSubmitted(true);
-                            }
+                            if (e.key === "Enter") handleSubscribe();
                           }}
                         />
                         <button
-                          onClick={() => {
-                            if (!alertEmail.includes("@")) return;
-                            fetch("/api/subscribe", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ email: alertEmail, city, lang }),
-                            }).catch(() => {});
-                            setAlertSubmitted(true);
-                          }}
+                          onClick={handleSubscribe}
                           className="px-8 py-4 bg-[#22c55e] text-white font-headline font-black rounded-full border-2 border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all neo-button whitespace-nowrap"
                         >
                           {l.alertButton} 🔔
