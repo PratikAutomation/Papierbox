@@ -131,9 +131,25 @@ async function callClaude(system: string, user: string, maxTokens = 2048): Promi
 
 function parseJSON<T>(text: string): T | null {
   let clean = text;
+  // Strip markdown code blocks
   if (clean.startsWith('```')) {
-    clean = clean.split('\n').slice(1, -1).join('\n');
+    clean = clean.replace(/^```(?:json)?\n?/, '').replace(/\n?```\s*$/, '');
   }
+  // Extract just the JSON object/array — ignore any trailing explanation text
+  // Find the first { or [ and match to its closing counterpart
+  const jsonStart = clean.search(/[{[]/);
+  if (jsonStart === -1) return null;
+  const startChar = clean[jsonStart];
+  const endChar = startChar === '{' ? '}' : ']';
+  let depth = 0;
+  let jsonEnd = -1;
+  for (let i = jsonStart; i < clean.length; i++) {
+    if (clean[i] === startChar) depth++;
+    else if (clean[i] === endChar) depth--;
+    if (depth === 0) { jsonEnd = i; break; }
+  }
+  if (jsonEnd === -1) return null;
+  clean = clean.slice(jsonStart, jsonEnd + 1);
   clean = clean.replace(/,\s*}/g, '}').replace(/,\s*\]/g, ']');
   try {
     return JSON.parse(clean) as T;
