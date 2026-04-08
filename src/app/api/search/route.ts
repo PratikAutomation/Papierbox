@@ -410,18 +410,30 @@ export async function GET(request: NextRequest) {
     }));
 
     console.log(`[Search] "${product}" → ${rankCandidates.length} candidates, calling Claude...`);
-    const claudeMatchIds = await rankWithClaude(product, rankCandidates);
-    console.log(`[Search] Claude returned ${claudeMatchIds.length} matches for "${product}"`);
+    let claudeWasCalled = false;
+    let claudeMatchIds: string[] = [];
+    try {
+      claudeMatchIds = await rankWithClaude(product, rankCandidates);
+      claudeWasCalled = true;
+      console.log(`[Search] Claude returned ${claudeMatchIds.length} matches for "${product}"`);
+    } catch (err) {
+      console.log(`[Search] Claude API failed for "${product}", falling back to scoreProduct()`, err);
+    }
 
-    if (claudeMatchIds.length > 0) {
-      // Claude returned matches — use its ordering
+    if (claudeWasCalled && claudeMatchIds.length > 0) {
+      // Claude found genuine matches — use its ordering
       const idToOffer = new Map(candidates.map(o => [o.id, o]));
       allRelevant = claudeMatchIds
         .map(id => idToOffer.get(id))
         .filter((o): o is Offer => !!o);
+    } else if (claudeWasCalled && claudeMatchIds.length === 0) {
+      // Claude explicitly said "nothing matches" — trust it, don't fall back to scoreProduct()
+      // This will trigger price estimation below (step 4)
+      console.log(`[Search] Claude says no genuine matches for "${product}" — will estimate prices`);
+      allRelevant = [];
     } else {
-      // Fallback: use keyword-based scoreProduct()
-      console.log(`[Fallback] Using scoreProduct() for "${product}" (Claude returned 0 or failed)`);
+      // Claude API was not available — fall back to keyword scoring
+      console.log(`[Fallback] Claude unavailable for "${product}", using scoreProduct()`);
       const searchTermEn = normalized.normalized_en || product;
       const scored = candidates
         .filter(offer => {

@@ -340,15 +340,12 @@ ${JSON.stringify(trimmed)}
 
 Which products match what the user wants? Return {"matches": ["id1", "id2", ...]} ranked by relevance.`;
 
-  try {
-    const text = await callClaude(RANK_SYSTEM, userPrompt, 512);
-    const parsed = parseJSON<{ matches: string[] }>(text);
-    if (!parsed || !Array.isArray(parsed.matches)) return [];
-    return parsed.matches.filter(id => typeof id === 'string');
-  } catch (error) {
-    console.error('rankWithClaude failed:', error);
-    return [];
-  }
+  // NOTE: This function THROWS on API errors so the caller can distinguish
+  // "Claude said no matches" (returns []) from "Claude API failed" (throws)
+  const text = await callClaude(RANK_SYSTEM, userPrompt, 512);
+  const parsed = parseJSON<{ matches: string[] }>(text);
+  if (!parsed || !Array.isArray(parsed.matches)) return [];
+  return parsed.matches.filter(id => typeof id === 'string');
 }
 
 /**
