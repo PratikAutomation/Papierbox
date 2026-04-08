@@ -308,7 +308,8 @@ CRITICAL RULES:
 - Exclude products that just contain the ingredient as a sub-component
 - If NOTHING genuinely matches, return an empty array
 
-Return ONLY valid JSON: {"matches": ["id1", "id2", ...]}
+RESPOND WITH ONLY THE JSON. NO EXPLANATION. NO REASONING. NO MARKDOWN.
+Format: {"matches": ["id1", "id2", ...]}
 Rank best matches first. Maximum 15 matches.`;
 
 export async function rankWithClaude(
@@ -384,7 +385,8 @@ Rules:
 - If no candidate genuinely matches, use null
 - Pick the cheapest genuine match when multiple products match equally
 
-Return JSON: {"results": {"item_name": "product_id_or_null", ...}}`;
+RESPOND WITH ONLY THE JSON. NO EXPLANATION. NO REASONING. NO MARKDOWN.
+Format: {"results": {"item_name": "product_id_or_null", ...}}`;
 
   try {
     const text = await callClaude(RANK_SYSTEM, userPrompt, 1024);
