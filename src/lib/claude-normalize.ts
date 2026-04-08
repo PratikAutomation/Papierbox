@@ -299,7 +299,11 @@ export async function rankWithClaude(
   query: string,
   candidates: RankCandidate[]
 ): Promise<string[]> {
-  if (!ANTHROPIC_API_KEY || candidates.length === 0) return [];
+  if (!ANTHROPIC_API_KEY) {
+    console.log('[rankWithClaude] No ANTHROPIC_API_KEY set, skipping');
+    return [];
+  }
+  if (candidates.length === 0) return [];
 
   // Trim candidate data to minimize tokens
   const trimmed = candidates.map(c => ({

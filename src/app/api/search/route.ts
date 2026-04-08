@@ -409,7 +409,9 @@ export async function GET(request: NextRequest) {
       unit: o.unit || '',
     }));
 
+    console.log(`[Search] "${product}" → ${rankCandidates.length} candidates, calling Claude...`);
     const claudeMatchIds = await rankWithClaude(product, rankCandidates);
+    console.log(`[Search] Claude returned ${claudeMatchIds.length} matches for "${product}"`);
 
     if (claudeMatchIds.length > 0) {
       // Claude returned matches — use its ordering
@@ -419,7 +421,7 @@ export async function GET(request: NextRequest) {
         .filter((o): o is Offer => !!o);
     } else {
       // Fallback: use keyword-based scoreProduct()
-      console.log(`[Fallback] Claude returned 0 matches for "${product}", using scoreProduct()`);
+      console.log(`[Fallback] Using scoreProduct() for "${product}" (Claude returned 0 or failed)`);
       const searchTermEn = normalized.normalized_en || product;
       const scored = candidates
         .filter(offer => {
