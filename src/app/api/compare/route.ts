@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Offer, ParsedItem, CompareResult } from '@/lib/types';
-import { normalizeItems, ocrPhoto, estimatePrices } from '@/lib/claude-normalize';
+import { normalizeItems, ocrPhoto, estimatePrices, matchItemsWithClaude } from '@/lib/claude-normalize';
 import { buildPriceMatrix } from '@/lib/price-matrix';
 
 const STORE_IDS = ['1', '2', '3', '4', '5'];
@@ -145,32 +145,80 @@ export async function POST(request: NextRequest) {
     // STEP 2: Normalize via Claude
     const parsedItems = await normalizeItems(itemStrings);
 
-    // STEP 3: Match against DB for each item
-    const matchedItems = await Promise.all(
+    // STEP 3: Match against DB for each item (LLM-powered with keyword fallback)
+    // First, fetch all candidates for all items
+    const allItemCandidates = await Promise.all(
       parsedItems.map(async (parsed) => {
-        const offersByStore: Record<string, Offer | null> = {};
-        for (const sid of STORE_IDS) {
-          offersByStore[sid] = null;
-        }
-
         const { data: rpcData } = await supabase.rpc('search_offers', {
           search_query: parsed.normalized_de || parsed.original,
           city_slug: city,
           result_limit: 50,
         });
-
         const candidates: Offer[] = (rpcData || []).map((row: Record<string, unknown>) =>
           mapRowToOffer(row as Record<string, any>) // eslint-disable-line @typescript-eslint/no-explicit-any
         );
-
-        for (const storeId of STORE_IDS) {
-          const storeCandidates = candidates.filter(o => o.storeId === storeId);
-          offersByStore[storeId] = pickBestMatch(storeCandidates, parsed);
-        }
-
-        return { parsed, offersByStore };
+        return { parsed, candidates };
       })
     );
+
+    // Try Claude matching for all items at once (single API call)
+    const candidatesByItem = new Map<string, { id: string; product_name: string; product_name_en: string; brand: string; category_en: string; price: number; unit: string }[]>();
+    for (const { parsed, candidates } of allItemCandidates) {
+      candidatesByItem.set(parsed.original, candidates.map(o => ({
+        id: o.id,
+        product_name: o.productName || '',
+        product_name_en: o.productNameEn || '',
+        brand: o.brand || '',
+        category_en: o.categoryEn || '',
+        price: o.price,
+        unit: o.unit || '',
+      })));
+    }
+
+    const claudeMatches = await matchItemsWithClaude(
+      parsedItems.map(p => p.original),
+      candidatesByItem
+    );
+
+    // Build matched items using Claude results with keyword fallback
+    const matchedItems = allItemCandidates.map(({ parsed, candidates }) => {
+      const offersByStore: Record<string, Offer | null> = {};
+      for (const sid of STORE_IDS) {
+        offersByStore[sid] = null;
+      }
+
+      // Check if Claude matched this item
+      const claudeMatchId = claudeMatches.get(parsed.original);
+
+      for (const storeId of STORE_IDS) {
+        const storeCandidates = candidates.filter(o => o.storeId === storeId);
+
+        if (claudeMatchId) {
+          // Claude picked a product — find it in this store's candidates
+          const claudePick = storeCandidates.find(o => o.id === claudeMatchId);
+          if (claudePick) {
+            offersByStore[storeId] = claudePick;
+            continue;
+          }
+          // Claude's pick isn't in this store — try to find same product name
+          const claudeOffer = candidates.find(o => o.id === claudeMatchId);
+          if (claudeOffer) {
+            const sameName = storeCandidates.find(o =>
+              o.productName === claudeOffer.productName || o.productNameEn === claudeOffer.productNameEn
+            );
+            if (sameName) {
+              offersByStore[storeId] = sameName;
+              continue;
+            }
+          }
+        }
+
+        // Fallback: keyword-based pickBestMatch
+        offersByStore[storeId] = pickBestMatch(storeCandidates, parsed);
+      }
+
+      return { parsed, offersByStore };
+    });
 
     // STEP 4: Find items that need price estimation
     const unmatchedItems: string[] = [];

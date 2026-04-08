@@ -263,6 +263,120 @@ export async function ocrPhoto(base64Image: string): Promise<string[]> {
   }
 }
 
+// ============================================================
+// LLM RANKING — Claude picks best matches from DB candidates
+// ============================================================
+
+interface RankCandidate {
+  id: string;
+  product_name: string;
+  product_name_en: string;
+  brand: string;
+  category_en: string;
+  price: number;
+  unit: string;
+}
+
+const RANK_SYSTEM = `You are a grocery product matcher for a German supermarket price comparison app.
+You receive a user's search query and a list of products from the database.
+Your job: pick ONLY the products that genuinely match what the user wants to buy.
+
+CRITICAL RULES:
+- Understand the user's INTENT, not just keywords
+- "Eggs" = Eier (chicken eggs for cooking). NOT egg pasta, NOT egg liqueur, NOT Kinder Surprise Egg, NOT products by brands containing "Ei"
+- "Milk" = Milch (drinking milk). NOT Milchreis (rice pudding), NOT Müllermilch (flavored drink), NOT Milchschnitte (snack)
+- "Butter" = actual butter/margarine. NOT Butterkeks (biscuit), NOT Buttermilch (buttermilk), NOT Erdnussbutter
+- "Chicken" = raw/cooked chicken meat. NOT chicken-flavored sausage, NOT chicken-flavored chips
+- German compound words: Milchreis is rice pudding (NOT milk), Eierlikör is egg liqueur (NOT eggs)
+- Include genuine variants: "Milk" → whole milk, low-fat milk, lactose-free milk, oat milk all count
+- Exclude products that just contain the ingredient as a sub-component
+- If NOTHING genuinely matches, return an empty array
+
+Return ONLY valid JSON: {"matches": ["id1", "id2", ...]}
+Rank best matches first. Maximum 15 matches.`;
+
+export async function rankWithClaude(
+  query: string,
+  candidates: RankCandidate[]
+): Promise<string[]> {
+  if (!ANTHROPIC_API_KEY || candidates.length === 0) return [];
+
+  // Trim candidate data to minimize tokens
+  const trimmed = candidates.map(c => ({
+    id: c.id,
+    n: c.product_name,
+    ne: c.product_name_en,
+    b: c.brand,
+    c: c.category_en,
+    p: c.price,
+    u: c.unit,
+  }));
+
+  const userPrompt = `User searched: "${query}"
+
+Products in database:
+${JSON.stringify(trimmed)}
+
+Which products match what the user wants? Return {"matches": ["id1", "id2", ...]} ranked by relevance.`;
+
+  try {
+    const text = await callClaude(RANK_SYSTEM, userPrompt, 512);
+    const parsed = parseJSON<{ matches: string[] }>(text);
+    if (!parsed || !Array.isArray(parsed.matches)) return [];
+    return parsed.matches.filter(id => typeof id === 'string');
+  } catch (error) {
+    console.error('rankWithClaude failed:', error);
+    return [];
+  }
+}
+
+/**
+ * For compare feature: pick best match for each item in a grocery list
+ * Single Claude call for all items (cheaper than one call per item)
+ */
+export async function matchItemsWithClaude(
+  items: string[],
+  candidatesByItem: Map<string, RankCandidate[]>
+): Promise<Map<string, string | null>> {
+  if (!ANTHROPIC_API_KEY) return new Map();
+
+  const itemData = items.map(item => ({
+    item,
+    candidates: (candidatesByItem.get(item) || []).map(c => ({
+      id: c.id,
+      n: c.product_name,
+      ne: c.product_name_en,
+      b: c.brand,
+      c: c.category_en,
+      p: c.price,
+      u: c.unit,
+    })),
+  }));
+
+  const userPrompt = `For each grocery list item, pick the SINGLE best matching product from its candidates.
+
+${JSON.stringify(itemData)}
+
+Rules:
+- Pick the product that IS the item, not a product that merely contains it as ingredient
+- "milk" → pick actual milk (Vollmilch, Frische Milch), NOT Milchreis, NOT Müllermilch
+- "eggs" → pick actual eggs (Eier), NOT egg pasta, NOT egg liqueur
+- If no candidate genuinely matches, use null
+- Pick the cheapest genuine match when multiple products match equally
+
+Return JSON: {"results": {"item_name": "product_id_or_null", ...}}`;
+
+  try {
+    const text = await callClaude(RANK_SYSTEM, userPrompt, 1024);
+    const parsed = parseJSON<{ results: Record<string, string | null> }>(text);
+    if (!parsed || !parsed.results) return new Map();
+    return new Map(Object.entries(parsed.results));
+  } catch (error) {
+    console.error('matchItemsWithClaude failed:', error);
+    return new Map();
+  }
+}
+
 export interface PriceEstimate {
   product: string;
   unit: string;

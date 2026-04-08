@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { Offer, SearchResult } from '@/lib/types';
-import { normalizeSingle } from '@/lib/claude-normalize';
+import { normalizeSingle, rankWithClaude } from '@/lib/claude-normalize';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const MAX_OFFERS = 8;
@@ -394,32 +394,54 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // STEP 3: PRECISE scoring — score with BOTH normalized and original terms, take best
-    // This is critical: Claude normalizes "milk 3.5 fat 2 packets" → "Milch"
-    // Scoring with "Milch" matches German products, scoring with original catches English matches
-    const searchTermEn = normalized.normalized_en || product;
-    const scored = candidates
-      .filter(offer => {
-        if (excludeTerms.length === 0) return true;
-        const pName = norm(offer.productName || '').toLowerCase();
-        return !excludeTerms.some(ex => pName.includes(ex.toLowerCase()));
-      })
-      .map(offer => {
-        // Score with all available terms, take the best score
-        const scoreOriginal = scoreProduct(product, offer);
-        const scoreNormDE = scoreProduct(searchTerm, offer);
-        const scoreNormEN = scoreProduct(searchTermEn, offer);
-        return { offer, score: Math.max(scoreOriginal, scoreNormDE, scoreNormEN) };
-      })
-      .filter(s => s.score >= 30)
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;
-        return a.offer.price - b.offer.price;
-      });
+    // STEP 3: LLM RANKING — Claude picks the genuinely matching products
+    // Falls back to scoreProduct() if Claude is unavailable
+    let allRelevant: Offer[] = [];
 
-    // STEP 3: Limit results
-    const allRelevant = scored.map(s => s.offer);
+    // Try Claude ranking first
+    const rankCandidates = candidates.map(o => ({
+      id: o.id,
+      product_name: o.productName || '',
+      product_name_en: o.productNameEn || '',
+      brand: o.brand || '',
+      category_en: o.categoryEn || '',
+      price: o.price,
+      unit: o.unit || '',
+    }));
+
+    const claudeMatchIds = await rankWithClaude(product, rankCandidates);
+
+    if (claudeMatchIds.length > 0) {
+      // Claude returned matches — use its ordering
+      const idToOffer = new Map(candidates.map(o => [o.id, o]));
+      allRelevant = claudeMatchIds
+        .map(id => idToOffer.get(id))
+        .filter((o): o is Offer => !!o);
+    } else {
+      // Fallback: use keyword-based scoreProduct()
+      console.log(`[Fallback] Claude returned 0 matches for "${product}", using scoreProduct()`);
+      const searchTermEn = normalized.normalized_en || product;
+      const scored = candidates
+        .filter(offer => {
+          if (excludeTerms.length === 0) return true;
+          const pName = norm(offer.productName || '').toLowerCase();
+          return !excludeTerms.some(ex => pName.includes(ex.toLowerCase()));
+        })
+        .map(offer => {
+          const scoreOriginal = scoreProduct(product, offer);
+          const scoreNormDE = scoreProduct(searchTerm, offer);
+          const scoreNormEN = scoreProduct(searchTermEn, offer);
+          return { offer, score: Math.max(scoreOriginal, scoreNormDE, scoreNormEN) };
+        })
+        .filter(s => s.score >= 30)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (a.offer.isOffer !== b.offer.isOffer) return a.offer.isOffer ? -1 : 1;
+          return a.offer.price - b.offer.price;
+        });
+      allRelevant = scored.map(s => s.offer);
+    }
+
     const offers = allRelevant.filter(i => i.isOffer).slice(0, MAX_OFFERS);
     const regularPrices = allRelevant.filter(i => !i.isOffer).slice(0, MAX_REGULAR);
 
