@@ -175,10 +175,18 @@ export async function POST(request: NextRequest) {
       })));
     }
 
-    const claudeMatches = await matchItemsWithClaude(
-      parsedItems.map(p => p.original),
-      candidatesByItem
-    );
+    let claudeMatches = new Map<string, string[]>();
+    let claudeWasCalled = false;
+    try {
+      claudeMatches = await matchItemsWithClaude(
+        parsedItems.map(p => p.original),
+        candidatesByItem
+      );
+      claudeWasCalled = true;
+      console.log(`[Compare] Claude matched ${claudeMatches.size}/${parsedItems.length} items`);
+    } catch (err) {
+      console.log('[Compare] Claude matching failed, falling back to keyword matching', err);
+    }
 
     // Build matched items using Claude results with keyword fallback
     const matchedItems = allItemCandidates.map(({ parsed, candidates }) => {
@@ -187,34 +195,32 @@ export async function POST(request: NextRequest) {
         offersByStore[sid] = null;
       }
 
-      // Check if Claude matched this item
-      const claudeMatchId = claudeMatches.get(parsed.original);
+      const claudeMatchIds = claudeMatches.get(parsed.original) || [];
+      const claudeIdSet = new Set(claudeMatchIds);
+      // Claude explicitly returned empty array = "no genuine match"
+      const claudeSaidNoMatch = claudeWasCalled && claudeMatches.has(parsed.original) && claudeMatchIds.length === 0;
 
       for (const storeId of STORE_IDS) {
         const storeCandidates = candidates.filter(o => o.storeId === storeId);
 
-        if (claudeMatchId) {
-          // Claude picked a product — find it in this store's candidates
-          const claudePick = storeCandidates.find(o => o.id === claudeMatchId);
+        if (claudeIdSet.size > 0) {
+          // Claude picked products — find the best one in this store
+          const claudePick = storeCandidates.find(o => claudeIdSet.has(o.id));
           if (claudePick) {
             offersByStore[storeId] = claudePick;
             continue;
           }
-          // Claude's pick isn't in this store — try to find same product name
-          const claudeOffer = candidates.find(o => o.id === claudeMatchId);
-          if (claudeOffer) {
-            const sameName = storeCandidates.find(o =>
-              o.productName === claudeOffer.productName || o.productNameEn === claudeOffer.productNameEn
-            );
-            if (sameName) {
-              offersByStore[storeId] = sameName;
-              continue;
-            }
-          }
         }
 
-        // Fallback: keyword-based pickBestMatch
-        offersByStore[storeId] = pickBestMatch(storeCandidates, parsed);
+        if (claudeSaidNoMatch) {
+          // Claude says no genuine match — trust it, leave null (will trigger estimation)
+          continue;
+        }
+
+        if (!claudeWasCalled) {
+          // Claude API wasn't available — fall back to keyword matching
+          offersByStore[storeId] = pickBestMatch(storeCandidates, parsed);
+        }
       }
 
       return { parsed, offersByStore };

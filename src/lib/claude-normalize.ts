@@ -355,8 +355,8 @@ Which products match what the user wants? Return {"matches": ["id1", "id2", ...]
 export async function matchItemsWithClaude(
   items: string[],
   candidatesByItem: Map<string, RankCandidate[]>
-): Promise<Map<string, string | null>> {
-  if (!ANTHROPIC_API_KEY) return new Map();
+): Promise<Map<string, string[]>> {
+  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
 
   const itemData = items.map(item => ({
     item,
@@ -371,29 +371,25 @@ export async function matchItemsWithClaude(
     })),
   }));
 
-  const userPrompt = `For each grocery list item, pick the SINGLE best matching product from its candidates.
+  const userPrompt = `For each grocery list item, pick ALL products that genuinely match from its candidates.
 
 ${JSON.stringify(itemData)}
 
 Rules:
-- Pick the product that IS the item, not a product that merely contains it as ingredient
-- "milk" → pick actual milk (Vollmilch, Frische Milch), NOT Milchreis, NOT Müllermilch
+- Pick products that ARE the item, not products that merely contain it as ingredient
+- "milk" → pick actual milk (Vollmilch, Frische Milch, H-Milch), NOT Milchreis, NOT Müllermilch
 - "eggs" → pick actual eggs (Eier), NOT egg pasta, NOT egg liqueur
-- If no candidate genuinely matches, use null
-- Pick the cheapest genuine match when multiple products match equally
+- Include ALL genuine matches (there may be one per store) — we need to compare prices across stores
+- If no candidate genuinely matches, use empty array []
 
 RESPOND WITH ONLY THE JSON. NO EXPLANATION. NO REASONING. NO MARKDOWN.
-Format: {"results": {"item_name": "product_id_or_null", ...}}`;
+Format: {"results": {"item_name": ["id1", "id2", ...], ...}}`;
 
-  try {
-    const text = await callClaude(RANK_SYSTEM, userPrompt, 1024);
-    const parsed = parseJSON<{ results: Record<string, string | null> }>(text);
-    if (!parsed || !parsed.results) return new Map();
-    return new Map(Object.entries(parsed.results));
-  } catch (error) {
-    console.error('matchItemsWithClaude failed:', error);
-    return new Map();
-  }
+  // Throws on API errors so caller can distinguish "Claude returned empty" from "API failed"
+  const text = await callClaude(RANK_SYSTEM, userPrompt, 1024);
+  const parsed = parseJSON<{ results: Record<string, string[]> }>(text);
+  if (!parsed || !parsed.results) return new Map();
+  return new Map(Object.entries(parsed.results).map(([k, v]) => [k, Array.isArray(v) ? v : []]));
 }
 
 export interface PriceEstimate {
