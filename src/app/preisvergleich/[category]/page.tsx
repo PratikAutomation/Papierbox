@@ -62,7 +62,7 @@ async function getAllCategories(): Promise<string[]> {
     .eq('is_offer', true)
 
   if (!data) return []
-  return [...new Set(data.map((r) => r.category_en).filter(Boolean) as string[])]
+  return Array.from(new Set(data.map((r) => r.category_en).filter(Boolean) as string[]))
 }
 
 async function getOffersForCategory(categoryEn: string): Promise<Offer[]> {
