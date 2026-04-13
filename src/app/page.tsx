@@ -136,11 +136,11 @@ const DAYS_EN = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const DAYS_DE = ["SO", "MO", "DI", "MI", "DO", "FR", "SA"];
 
 const POPULAR_SEARCHES = [
-  { emoji: "🥑", name: "Avocado" },
-  { emoji: "🍗", name: "Chicken" },
+  { emoji: "🍓", name: "Strawberries" },
   { emoji: "🧈", name: "Butter" },
-  { emoji: "🥛", name: "Milk" },
-  { emoji: "🥚", name: "Eggs" },
+  { emoji: "🍕", name: "Pizza" },
+  { emoji: "🍫", name: "Chocolate" },
+  { emoji: "🥛", name: "Yoghurt" },
 ];
 
 const CITIES = [
