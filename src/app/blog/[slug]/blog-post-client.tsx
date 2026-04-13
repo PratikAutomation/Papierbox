@@ -4,9 +4,19 @@ import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import type { BlogPost } from "@/lib/blog";
 
-export default function BlogPostClient({ post }: { post: Omit<BlogPost, "content"> & { content: () => React.ReactNode } }) {
+interface Props {
+  title: string;
+  titleDe: string;
+  description: string;
+  descriptionDe: string;
+  date: string;
+  readingTime: string;
+  slug: string;
+  children: React.ReactNode;
+}
+
+export default function BlogPostClient({ title, titleDe, description, descriptionDe, date, readingTime, slug, children }: Props) {
   const [lang, setLang] = useState<"en" | "de">("en");
 
   return (
@@ -19,26 +29,26 @@ export default function BlogPostClient({ post }: { post: Omit<BlogPost, "content
             <span>/</span>
             <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
             <span>/</span>
-            <span className="text-primary truncate max-w-[200px]">{post.title.split(":")[0]}</span>
+            <span className="text-primary truncate max-w-[200px]">{title.split(":")[0]}</span>
           </nav>
 
           <header className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-black uppercase tracking-widest text-primary">{post.date}</span>
+              <span className="text-xs font-black uppercase tracking-widest text-primary">{date}</span>
               <span className="text-xs font-bold text-on-surface-variant bg-white border-2 border-outline/20 rounded-full px-3 py-1">
-                {post.readingTime}
+                {readingTime}
               </span>
             </div>
             <h1 className="font-headline font-black text-3xl md:text-5xl leading-[1.1] text-on-surface mb-5">
-              {lang === "en" ? post.title : post.titleDe}
+              {lang === "en" ? title : titleDe}
             </h1>
             <p className="text-on-surface-variant text-lg font-medium leading-relaxed">
-              {lang === "en" ? post.description : post.descriptionDe}
+              {lang === "en" ? description : descriptionDe}
             </p>
           </header>
 
           <div className="prose-blog">
-            {post.content()}
+            {children}
           </div>
 
           <div className="mt-16 bg-[#1a1c1c] text-white border-4 border-[#1a1c1c] rounded-[2rem] shadow-neo p-8 md:p-10">

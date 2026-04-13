@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-export const dynamic = 'force-static'
-export const revalidate = 86400
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Lebensmittel Preisvergleich Deutschland | Papierbox',

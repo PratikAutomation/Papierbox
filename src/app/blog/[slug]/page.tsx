@@ -27,5 +27,22 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = ALL_POSTS.find((p) => p.slug === params.slug);
   if (!post) return notFound();
-  return <BlogPostClient post={post} />;
+
+  // Call content() server-side — functions can't cross the server→client boundary,
+  // but the resulting ReactNode can be passed as children
+  const renderedContent = post.content();
+
+  return (
+    <BlogPostClient
+      title={post.title}
+      titleDe={post.titleDe}
+      description={post.description}
+      descriptionDe={post.descriptionDe}
+      date={post.date}
+      readingTime={post.readingTime}
+      slug={post.slug}
+    >
+      {renderedContent}
+    </BlogPostClient>
+  );
 }
