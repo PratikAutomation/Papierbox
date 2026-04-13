@@ -283,6 +283,44 @@ function LoadingState({ steps, lang }: { steps: { en: string; de: string }[]; la
 }
 
 // ============================================================
+// TRACTION BAR COMPONENT
+// ============================================================
+
+function TractionBar({ lang }: { lang: Lang }) {
+  const [stats, setStats] = useState<{ price_checks: number; offers_tracked: number; savings_est: number } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.json())
+      .then(setStats)
+      .catch(() => {});
+  }, []);
+
+  if (!stats) return null;
+
+  const fmt = (n: number) => n.toLocaleString('de-DE');
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm font-bold text-on-surface-variant/70 mt-4 mb-2">
+      <span>
+        <span className="text-primary font-black">{fmt(stats.price_checks)}</span>
+        {" "}{lang === "en" ? "price checks done" : "Preisvergleiche"}
+      </span>
+      <span className="hidden sm:inline text-outline/30">·</span>
+      <span>
+        <span className="text-primary font-black">€{fmt(stats.savings_est)}+</span>
+        {" "}{lang === "en" ? "saved" : "gespart"}
+      </span>
+      <span className="hidden sm:inline text-outline/30">·</span>
+      <span>
+        <span className="text-primary font-black">{fmt(stats.offers_tracked)}</span>
+        {" "}{lang === "en" ? "offers tracked" : "Angebote"}
+      </span>
+    </div>
+  );
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
@@ -493,6 +531,7 @@ export default function Home() {
           <p className="text-on-surface-variant text-xl md:text-2xl mb-12 max-w-2xl mx-auto font-medium">
             {l.subtext} <span className="text-primary font-bold">{l.subtextHighlight}</span>
           </p>
+          <TractionBar lang={lang} />
 
           {/* Mode Toggle */}
           <div className="flex justify-center mb-8">
