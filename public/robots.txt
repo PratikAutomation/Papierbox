@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.papierbox.eu/sitemap.xml
-Sitemap: https://www.papierbox.eu/sitemap-static.xml
