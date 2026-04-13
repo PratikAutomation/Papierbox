@@ -456,8 +456,6 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [alertEmail, setAlertEmail] = useState("");
-  const [alertSubmitted, setAlertSubmitted] = useState(false);
   const [missingField, setMissingField] = useState<"product" | "city" | null>(null);
   const [mode, setMode] = useState<"search" | "list">("search");
   const [listText, setListText] = useState("");
@@ -473,29 +471,6 @@ export default function Home() {
 
   const l = t[lang];
 
-  function handleSubscribe() {
-    if (!alertEmail.includes("@")) return;
-    // 1. Save to Supabase
-    fetch("/api/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: alertEmail, city, lang }),
-    }).catch(() => {});
-    // 2. Send email notification via Web3Forms
-    fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: "79d8e709-6ea4-4a6c-85d5-d2aaf91b7641",
-        subject: `[Papierbox] New Subscriber: ${alertEmail}`,
-        from_name: "Papierbox Alerts",
-        name: "Subscriber Alert",
-        email: alertEmail,
-        message: `New email subscriber!\n\nEmail: ${alertEmail}\nCity: ${city}\nLanguage: ${lang}\nTime: ${new Date().toISOString()}`,
-      }),
-    }).catch(() => {});
-    setAlertSubmitted(true);
-  }
 
   useEffect(() => {
     if (query.length < 1) {
