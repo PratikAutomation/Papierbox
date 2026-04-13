@@ -143,6 +143,15 @@ const POPULAR_SEARCHES = [
   { emoji: "🥛", name: "Yoghurt" },
 ];
 
+const DEAL_FACTS: { emoji: string; en: string; de: string }[] = [
+  { emoji: "🥤", en: "Schwip Schwap 1.25L at Penny — €0.69 (was €3.49) · 80% off!", de: "Schwip Schwap 1,25L bei Penny — €0,69 statt €3,49 · 80% Rabatt!" },
+  { emoji: "🍓", en: "Strawberries on deal at multiple stores this week", de: "Erdbeeren diese Woche in mehreren Läden im Angebot" },
+  { emoji: "🧈", en: "Butter deals across 5 stores — prices vary up to 30%", de: "Butter in 5 Läden im Angebot — bis zu 30% Unterschied" },
+  { emoji: "🍕", en: "Frozen Pizza at Penny — €1.49 instead of €3.49 · 57% off!", de: "TK-Pizza bei Penny — €1,49 statt €3,49 · 57% günstiger!" },
+  { emoji: "🍫", en: "Chocolate on sale in all 5 supermarkets this week", de: "Schokolade diese Woche in allen 5 Supermärkten reduziert" },
+  { emoji: "🥛", en: "Yoghurt prices differ by €1+ between stores — always compare!", de: "Joghurt: über €1 Unterschied zwischen Läden — immer vergleichen!" },
+];
+
 const CITIES = [
   { label: "Hamburg", value: "hamburg" },
   { label: "Berlin", value: "berlin" },
@@ -170,6 +179,95 @@ const CITIES = [
   { label: "Kiel", value: "kiel" },
   { label: "Dortmund", value: "dortmund" },
 ];
+
+// ============================================================
+// LOADING STATE COMPONENT
+// ============================================================
+
+function LoadingState({ steps, lang }: { steps: { en: string; de: string }[]; lang: Lang }) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [factIndex, setFactIndex] = useState(0);
+  const [factVisible, setFactVisible] = useState(true);
+
+  // Advance through steps at fixed intervals from mount
+  useEffect(() => {
+    const timings = [700, 1600, 3000, 4500];
+    const timers = steps.slice(1).map((_, i) =>
+      setTimeout(() => setCurrentStep(i + 1), timings[i])
+    );
+    return () => timers.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Rotate deal facts every 1.8s with fade
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFactVisible(false);
+      setTimeout(() => {
+        setFactIndex(i => (i + 1) % DEAL_FACTS.length);
+        setFactVisible(true);
+      }, 280);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fact = DEAL_FACTS[factIndex];
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 gap-10">
+      {/* Step progress bar */}
+      <div className="flex items-start w-full max-w-md">
+        {steps.map((step, i) => (
+          <div key={i} className="flex items-start flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-2 min-w-0">
+              <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-400 ${
+                i < currentStep
+                  ? "bg-primary border-primary text-white"
+                  : i === currentStep
+                  ? "bg-primary border-primary text-white"
+                  : "bg-white border-outline"
+              }`}>
+                {i < currentStep ? (
+                  <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>check</span>
+                ) : i === currentStep ? (
+                  <span className="w-2.5 h-2.5 bg-white rounded-full animate-pulse block" />
+                ) : (
+                  <span className="w-2 h-2 bg-outline/30 rounded-full block" />
+                )}
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-tight text-center leading-tight px-1 transition-colors duration-300 ${
+                i <= currentStep ? "text-primary" : "text-on-surface-variant/40"
+              }`}>
+                {step[lang]}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`flex-1 h-0.5 mt-[18px] mx-1 transition-all duration-500 ${
+                i < currentStep ? "bg-primary" : "bg-outline/20"
+              }`} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Rotating deal fact card */}
+      <div
+        className="w-full max-w-sm bg-white border-4 border-outline rounded-[2rem] shadow-neo p-6"
+        style={{ opacity: factVisible ? 1 : 0, transition: "opacity 0.28s ease" }}
+      >
+        <div className="flex items-start gap-3">
+          <span className="text-3xl leading-none">{fact.emoji}</span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1.5">
+              {lang === "en" ? "Deal this week" : "Deal diese Woche"}
+            </p>
+            <p className="font-bold text-on-surface text-sm leading-snug">{fact[lang]}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ============================================================
 // MAIN COMPONENT
@@ -601,12 +699,14 @@ export default function Home() {
         {hasSearched && (
           <section ref={resultsRef} className="max-w-5xl mx-auto px-6 scroll-mt-24">
             {mode === "search" && loading && (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <span className="material-symbols-outlined text-5xl text-primary animate-spin">
-                  progress_activity
-                </span>
-                <p className="text-on-surface-variant font-bold text-lg">{l.findingPrices}</p>
-              </div>
+              <LoadingState
+                lang={lang}
+                steps={[
+                  { en: "Searching", de: "Suche" },
+                  { en: "AI Ranking", de: "KI-Rang" },
+                  { en: "Done", de: "Fertig" },
+                ]}
+              />
             )}
 
             {mode === "search" && !loading && result && (result.totalOffers > 0 || result.totalRegular > 0) && (
@@ -733,17 +833,15 @@ export default function Home() {
             )}
 
             {mode === "list" && compareLoading && (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <span className="material-symbols-outlined text-5xl text-primary animate-spin">
-                  progress_activity
-                </span>
-                <p className="font-headline font-bold text-xl text-on-surface">
-                  {lang === "en" ? "Crunching numbers across 5 stores..." : "Preise werden verglichen..."}
-                </p>
-                <p className="text-on-surface-variant font-semibold text-sm">
-                  {lang === "en" ? "This takes ~5 seconds" : "Das dauert ~5 Sekunden"}
-                </p>
-              </div>
+              <LoadingState
+                lang={lang}
+                steps={[
+                  { en: "Reading list", de: "Liste lesen" },
+                  { en: "Matching", de: "Abgleich" },
+                  { en: "5 stores", de: "5 Läden" },
+                  { en: "Best deal", de: "Bester Deal" },
+                ]}
+              />
             )}
 
             {mode === "list" && compareResult && !compareLoading && (
