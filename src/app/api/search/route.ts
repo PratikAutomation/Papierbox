@@ -476,6 +476,9 @@ export async function GET(request: NextRequest) {
     const worstPrice = offerPrices.length > 0 ? Math.max(...offerPrices) : null;
     const savingsAmount = bestPrice !== null && worstPrice !== null ? worstPrice - bestPrice : null;
 
+    // Fire-and-forget — never await, never block the search response
+    fetch(`${request.nextUrl.origin}/api/stats/increment`, { method: 'POST' }).catch(() => {});
+
     return NextResponse.json(
       {
         data: {
