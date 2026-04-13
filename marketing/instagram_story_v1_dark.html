@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Papierbox Story — Dark Neon</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #111;
+    padding: 20px;
+  }
+  .story {
+    width: 1080px;
+    height: 1920px;
+    background: #0a0a0a;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  /* Glow orbs */
+  .glow-1 {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    border-radius: 50%;
+  }
+  .glow-2 {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%);
+    bottom: 200px;
+    left: -200px;
+    border-radius: 50%;
+  }
+
+  /* Top badge */
+  .top-section {
+    padding: 80px 60px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .brand {
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    opacity: 0.4;
+    letter-spacing: -0.5px;
+  }
+  .milestone-tag {
+    display: inline-block;
+    margin-top: 16px;
+    border: 2px solid #22C55E;
+    color: #22C55E;
+    font-size: 14px;
+    font-weight: 800;
+    padding: 8px 24px;
+    border-radius: 100px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Hero number */
+  .hero {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 80px 60px 20px;
+  }
+  .hero-number {
+    font-size: 220px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 0.9;
+    letter-spacing: -10px;
+  }
+  .hero-number .green { color: #22C55E; }
+  .hero-label {
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+  }
+
+  /* Divider line */
+  .line {
+    width: 80px;
+    height: 4px;
+    background: #22C55E;
+    margin: 40px auto;
+    border-radius: 4px;
+  }
+
+  /* Stats */
+  .stats {
+    position: relative;
+    z-index: 2;
+    padding: 0 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .stat-icon {
+    width: 64px;
+    height: 64px;
+    background: rgba(34,197,94,0.1);
+    border: 2px solid rgba(34,197,94,0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .stat-info { flex: 1; }
+  .stat-val {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+  }
+  .stat-val .green { color: #22C55E; }
+  .stat-desc {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* Chart */
+  .chart-section {
+    position: relative;
+    z-index: 2;
+    padding: 50px 60px 30px;
+  }
+  .chart-label-top {
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 140px;
+  }
+  .bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+  }
+  .bar {
+    width: 100%;
+    max-width: 65px;
+    border-radius: 8px 8px 0 0;
+    min-height: 6px;
+  }
+  .bar.green { background: #22C55E; }
+  .bar.dim { background: rgba(34,197,94,0.3); }
+  .bar.bright {
+    background: #22C55E;
+    box-shadow: 0 0 20px rgba(34,197,94,0.4);
+  }
+  .bar-day {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.2);
+    margin-top: 8px;
+  }
+
+  /* Cities */
+  .cities {
+    position: relative;
+    z-index: 2;
+    padding: 20px 60px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  .city {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+  }
+  .city .pin { color: #22C55E; margin-right: 6px; }
+
+  /* Footer */
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px 60px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    text-align: center;
+    z-index: 2;
+  }
+  .footer-url {
+    font-size: 32px;
+    font-weight: 900;
+    color: #22C55E;
+    letter-spacing: -0.5px;
+  }
+  .footer-sub {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="story">
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="top-section">
+    <div class="brand">papierbox.eu</div>
+    <div class="milestone-tag">Milestone Unlocked</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-number">2<span class="green">0</span>0<span class="green">+</span></div>
+    <div class="hero-label">Real Users</div>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="stats">
+    <div class="stat-row">
+      <div class="stat-icon">📊</div>
+      <div class="stat-info">
+        <div class="stat-val"><span class="green">412</span> Page Views</div>
+        <div class="stat-desc">Across all pages</div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-info">
+        <div class="stat-val"><span class="green">1,066</span> Products</div>
+        <div class="stat-desc">Tracked across 5 supermarkets</div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-icon">🔍</div>
+      <div class="stat-info">
+        <div class="stat-val"><span class="green">85%</span> Search Rate</div>
+        <div class="stat-desc">Users actively comparing prices</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-label-top">Daily Visitors</div>
+    <div class="chart">
+      <div class="bar-wrap">
+        <div class="bar-val">33</div>
+        <div class="bar bright" style="height:60%;"></div>
+        <div class="bar-day">Mar 30</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">19</div>
+        <div class="bar green" style="height:35%;"></div>
+        <div class="bar-day">Mar 31</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">6</div>
+        <div class="bar dim" style="height:11%;"></div>
+        <div class="bar-day">Apr 1</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">5</div>
+        <div class="bar dim" style="height:9%;"></div>
+        <div class="bar-day">Apr 2</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">24</div>
+        <div class="bar green" style="height:44%;"></div>
+        <div class="bar-day">Apr 3</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">12</div>
+        <div class="bar dim" style="height:22%;"></div>
+        <div class="bar-day">Apr 4</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-val">55</div>
+        <div class="bar bright" style="height:100%;"></div>
+        <div class="bar-day">Peak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cities">
+    <div class="city"><span class="pin">●</span>Berlin</div>
+    <div class="city"><span class="pin">●</span>Hamburg</div>
+    <div class="city"><span class="pin">●</span>Munich</div>
+    <div class="city"><span class="pin">●</span>Regensburg</div>
+    <div class="city"><span class="pin">●</span>Nuremberg</div>
+    <div class="city"><span class="pin">●</span>Frankfurt</div>
+    <div class="city"><span class="pin">●</span>Düsseldorf</div>
+    <div class="city"><span class="pin">●</span>Stuttgart</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-url">papierbox.eu</div>
+    <div class="footer-sub">Compare grocery prices. Save money.</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Papierbox Story — Clean White</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #e5e5e5;
+    padding: 20px;
+  }
+  .story {
+    width: 1080px;
+    height: 1920px;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Green top bar */
+  .green-bar {
+    height: 8px;
+    background: #22C55E;
+  }
+
+  /* Header */
+  .header {
+    padding: 50px 70px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-size: 28px;
+    font-weight: 900;
+    color: #1a1c1c;
+  }
+  .brand span { color: #22C55E; }
+  .badge {
+    background: #ECFDF5;
+    color: #22C55E;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 50px 70px 30px;
+    position: relative;
+  }
+  .hero-pre {
+    font-size: 20px;
+    font-weight: 800;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+  }
+  .hero-number {
+    font-size: 200px;
+    font-weight: 900;
+    color: #1a1c1c;
+    line-height: 0.9;
+    letter-spacing: -8px;
+    margin-top: 5px;
+  }
+  .hero-number .plus {
+    color: #22C55E;
+    font-size: 120px;
+    vertical-align: top;
+    line-height: 0.8;
+  }
+  .hero-sub {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a1c1c;
+    margin-top: 12px;
+  }
+  .hero-sub span { color: #22C55E; }
+  .hero-period {
+    font-size: 16px;
+    font-weight: 600;
+    color: #9CA3AF;
+    margin-top: 6px;
+  }
+
+  /* Thick divider */
+  .thick-divider {
+    margin: 30px 70px;
+    height: 4px;
+    background: #F3F4F6;
+    border-radius: 4px;
+  }
+
+  /* Metric cards */
+  .metrics {
+    padding: 10px 70px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .metric {
+    display: flex;
+    align-items: center;
+    background: #FAFAFA;
+    border-radius: 24px;
+    padding: 28px 32px;
+    border: 2px solid #F3F4F6;
+  }
+  .metric-left {
+    flex: 1;
+  }
+  .metric-number {
+    font-size: 44px;
+    font-weight: 900;
+    color: #1a1c1c;
+  }
+  .metric-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .metric-bar-area {
+    width: 200px;
+    height: 50px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .mini-bar {
+    flex: 1;
+    background: #22C55E;
+    border-radius: 4px 4px 0 0;
+    opacity: 0.15;
+  }
+  .mini-bar.a1 { height: 20%; opacity: 0.2; }
+  .mini-bar.a2 { height: 35%; opacity: 0.3; }
+  .mini-bar.a3 { height: 25%; opacity: 0.25; }
+  .mini-bar.a4 { height: 50%; opacity: 0.4; }
+  .mini-bar.a5 { height: 70%; opacity: 0.6; }
+  .mini-bar.a6 { height: 60%; opacity: 0.5; }
+  .mini-bar.a7 { height: 100%; opacity: 1; }
+
+  /* Map section */
+  .map-section {
+    padding: 30px 70px 20px;
+  }
+  .map-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #D1D5DB;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .city-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .city-card {
+    text-align: center;
+    padding: 16px 8px;
+    background: #FAFAFA;
+    border-radius: 16px;
+    border: 2px solid #F3F4F6;
+  }
+  .city-dot {
+    width: 12px;
+    height: 12px;
+    background: #22C55E;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+  }
+  .city-dot.sm { width: 8px; height: 8px; background: #86EFAC; }
+  .city-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #374151;
+  }
+  .city-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: #D1D5DB;
+    margin-top: 2px;
+  }
+
+  /* Stores */
+  .store-section {
+    padding: 20px 70px;
+  }
+  .store-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .store-pill {
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .s-lidl { background: #0050AA; }
+  .s-aldi { background: #00005F; }
+  .s-penny { background: #CD1719; }
+  .s-kaufland { background: #E10915; }
+  .s-netto { background: #c4b800; color: #1a1c1c; }
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    padding: 30px 70px 50px;
+    text-align: center;
+    background: #1a1c1c;
+  }
+  .footer-main {
+    font-size: 24px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+  }
+  .footer-main span { color: #22C55E; }
+  .footer-url {
+    font-size: 38px;
+    font-weight: 900;
+    color: #fff;
+    margin-top: 8px;
+  }
+  .footer-url span { color: #22C55E; }
+  .footer-arrow {
+    color: #22C55E;
+    font-size: 20px;
+    margin-top: 10px;
+    font-weight: 800;
+  }
+</style>
+</head>
+<body>
+<div class="story">
+  <div class="green-bar"></div>
+
+  <div class="header">
+    <div class="brand">papier<span>box</span></div>
+    <div class="badge">Milestone</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-pre">We just reached</div>
+    <div class="hero-number">200<span class="plus">+</span></div>
+    <div class="hero-sub">unique users across <span>Germany</span></div>
+    <div class="hero-period">First 2 weeks since launch</div>
+  </div>
+
+  <div class="thick-divider"></div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-left">
+        <div class="metric-number">412</div>
+        <div class="metric-label">Total Page Views</div>
+      </div>
+      <div class="metric-bar-area">
+        <div class="mini-bar a1"></div>
+        <div class="mini-bar a2"></div>
+        <div class="mini-bar a3"></div>
+        <div class="mini-bar a4"></div>
+        <div class="mini-bar a5"></div>
+        <div class="mini-bar a6"></div>
+        <div class="mini-bar a7"></div>
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-left">
+        <div class="metric-number">1,066</div>
+        <div class="metric-label">Products Compared</div>
+      </div>
+      <div class="metric-bar-area">
+        <div class="mini-bar a2"></div>
+        <div class="mini-bar a3"></div>
+        <div class="mini-bar a5"></div>
+        <div class="mini-bar a4"></div>
+        <div class="mini-bar a6"></div>
+        <div class="mini-bar a7"></div>
+        <div class="mini-bar a7"></div>
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-left">
+        <div class="metric-number">85%</div>
+        <div class="metric-label">Users Searched a Product</div>
+      </div>
+      <div class="metric-bar-area">
+        <div class="mini-bar a3"></div>
+        <div class="mini-bar a5"></div>
+        <div class="mini-bar a6"></div>
+        <div class="mini-bar a7"></div>
+        <div class="mini-bar a7"></div>
+        <div class="mini-bar a7"></div>
+        <div class="mini-bar a7"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="thick-divider"></div>
+
+  <div class="map-section">
+    <div class="map-title">Users across Germany</div>
+    <div class="city-grid">
+      <div class="city-card"><div class="city-dot"></div><div class="city-name">Regensburg</div><div class="city-count">20 users</div></div>
+      <div class="city-card"><div class="city-dot"></div><div class="city-name">Berlin</div><div class="city-count">12 users</div></div>
+      <div class="city-card"><div class="city-dot"></div><div class="city-name">Hamburg</div><div class="city-count">11 users</div></div>
+      <div class="city-card"><div class="city-dot sm"></div><div class="city-name">Munich</div><div class="city-count">8 users</div></div>
+      <div class="city-card"><div class="city-dot sm"></div><div class="city-name">Nuremberg</div><div class="city-count">9 users</div></div>
+      <div class="city-card"><div class="city-dot sm"></div><div class="city-name">Frankfurt</div><div class="city-count">4 users</div></div>
+      <div class="city-card"><div class="city-dot sm"></div><div class="city-name">Düsseldorf</div><div class="city-count">2 users</div></div>
+      <div class="city-card"><div class="city-dot sm"></div><div class="city-name">Stuttgart</div><div class="city-count">2 users</div></div>
+    </div>
+  </div>
+
+  <div class="store-section">
+    <div class="store-row">
+      <div class="store-pill s-lidl">Lidl</div>
+      <div class="store-pill s-aldi">Aldi</div>
+      <div class="store-pill s-penny">Penny</div>
+      <div class="store-pill s-kaufland">Kaufland</div>
+      <div class="store-pill s-netto">Netto</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-main">Compare grocery prices. <span>Save money.</span></div>
+    <div class="footer-url">papier<span>box</span>.eu</div>
+    <div class="footer-arrow">Swipe up ↑</div>
+  </div>
+</div>
+</body>
+</html>

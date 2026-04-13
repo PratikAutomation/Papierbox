@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Papierbox Story — Gradient</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #111;
+    padding: 20px;
+  }
+  .story {
+    width: 1080px;
+    height: 1920px;
+    background: linear-gradient(165deg, #0f2a1a 0%, #0a0a0a 40%, #0a0a0a 60%, #0f1a2a 100%);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Decorative circles */
+  .circle-1 {
+    position: absolute;
+    width: 400px; height: 400px;
+    border: 2px solid rgba(34,197,94,0.08);
+    border-radius: 50%;
+    top: -80px; right: -80px;
+  }
+  .circle-2 {
+    position: absolute;
+    width: 600px; height: 600px;
+    border: 2px solid rgba(34,197,94,0.05);
+    border-radius: 50%;
+    top: -150px; right: -150px;
+  }
+  .circle-3 {
+    position: absolute;
+    width: 300px; height: 300px;
+    border: 2px solid rgba(34,197,94,0.06);
+    border-radius: 50%;
+    bottom: 300px; left: -100px;
+  }
+
+  /* Content */
+  .content { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
+
+  .top {
+    padding: 70px 60px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-size: 24px;
+    font-weight: 900;
+    color: #22C55E;
+  }
+  .date {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Celebration */
+  .celebration {
+    text-align: center;
+    padding: 60px 60px 30px;
+  }
+  .emoji-row {
+    font-size: 48px;
+    margin-bottom: 20px;
+    letter-spacing: 10px;
+  }
+  .cel-subtitle {
+    font-size: 18px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    margin-bottom: 15px;
+  }
+  .cel-number {
+    font-size: 180px;
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -8px;
+    background: linear-gradient(135deg, #22C55E 0%, #4ADE80 50%, #22C55E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .cel-label {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+  .cel-label span { color: #22C55E; }
+
+  /* Big stats */
+  .big-stats {
+    padding: 40px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .big-stat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px;
+    padding: 30px;
+    text-align: center;
+  }
+  .big-stat.full { grid-column: 1 / -1; }
+  .bs-number {
+    font-size: 52px;
+    font-weight: 900;
+    color: #22C55E;
+    line-height: 1;
+  }
+  .bs-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 8px;
+  }
+
+  /* Visual chart - growing line */
+  .growth-section {
+    padding: 30px 60px 10px;
+  }
+  .growth-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .growth-visual {
+    position: relative;
+    height: 180px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .growth-bar {
+    flex: 1;
+    border-radius: 6px 6px 0 0;
+    min-height: 4px;
+    position: relative;
+  }
+  .growth-bar .tip {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+  }
+  .g1 { background: rgba(34,197,94,0.15); }
+  .g2 { background: rgba(34,197,94,0.2); }
+  .g3 { background: rgba(34,197,94,0.3); }
+  .g4 { background: rgba(34,197,94,0.4); }
+  .g5 { background: rgba(34,197,94,0.5); }
+  .g6 { background: rgba(34,197,94,0.65); }
+  .g7 { background: #22C55E; box-shadow: 0 0 30px rgba(34,197,94,0.3); }
+
+  .growth-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0 0;
+  }
+  .growth-labels span {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.15);
+  }
+
+  /* Store logos */
+  .stores-row {
+    padding: 30px 60px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .store-tag {
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .store-tag.lidl { background: #0050AA; }
+  .store-tag.aldi { background: #00005F; }
+  .store-tag.penny { background: #CD1719; }
+  .store-tag.kaufland { background: #E10915; }
+  .store-tag.netto { background: #c4b800; color: #1a1c1c; }
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    padding: 40px 60px 60px;
+    text-align: center;
+  }
+  .footer-cta {
+    font-size: 22px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+  }
+  .footer-cta span { color: #22C55E; }
+  .footer-url {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    margin-top: 10px;
+  }
+  .footer-url span { color: #22C55E; }
+</style>
+</head>
+<body>
+<div class="story">
+  <div class="circle-1"></div>
+  <div class="circle-2"></div>
+  <div class="circle-3"></div>
+
+  <div class="content">
+    <div class="top">
+      <div class="brand">papierbox</div>
+      <div class="date">April 2026</div>
+    </div>
+
+    <div class="celebration">
+      <div class="emoji-row">🎉 🚀 🎯</div>
+      <div class="cel-subtitle">We just hit</div>
+      <div class="cel-number">200+</div>
+      <div class="cel-label">Users in <span>2 weeks</span></div>
+    </div>
+
+    <div class="big-stats">
+      <div class="big-stat">
+        <div class="bs-number">412</div>
+        <div class="bs-label">Page Views</div>
+      </div>
+      <div class="big-stat">
+        <div class="bs-number">85%</div>
+        <div class="bs-label">Searched</div>
+      </div>
+      <div class="big-stat full">
+        <div class="bs-number">8 Cities Across Germany</div>
+        <div class="bs-label">Berlin · Hamburg · Munich · Frankfurt · Nuremberg · Regensburg · Stuttgart · Düsseldorf</div>
+      </div>
+    </div>
+
+    <div class="growth-section">
+      <div class="growth-title">Our Growth Journey</div>
+      <div class="growth-visual">
+        <div class="growth-bar g1" style="height:3%;"></div>
+        <div class="growth-bar g1" style="height:3%;"></div>
+        <div class="growth-bar g1" style="height:3%;"></div>
+        <div class="growth-bar g1" style="height:4%;"></div>
+        <div class="growth-bar g2" style="height:5%;"></div>
+        <div class="growth-bar g2" style="height:6%;"></div>
+        <div class="growth-bar g3" style="height:12%;"></div>
+        <div class="growth-bar g3" style="height:15%;"></div>
+        <div class="growth-bar g4" style="height:20%;"></div>
+        <div class="growth-bar g4" style="height:25%;"></div>
+        <div class="growth-bar g5" style="height:40%;"></div>
+        <div class="growth-bar g5" style="height:55%;"></div>
+        <div class="growth-bar g6" style="height:65%;"></div>
+        <div class="growth-bar g6" style="height:60%;"></div>
+        <div class="growth-bar g6" style="height:72%;"></div>
+        <div class="growth-bar g7" style="height:85%;"></div>
+        <div class="growth-bar g7" style="height:100%;"><div class="tip">Today 🎯</div></div>
+      </div>
+      <div class="growth-labels">
+        <span>Launch</span>
+        <span>200+ Users</span>
+      </div>
+    </div>
+
+    <div class="stores-row">
+      <div class="store-tag lidl">Lidl</div>
+      <div class="store-tag aldi">Aldi Süd</div>
+      <div class="store-tag penny">Penny</div>
+      <div class="store-tag kaufland">Kaufland</div>
+      <div class="store-tag netto">Netto</div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-cta">Compare prices. <span>Save money.</span></div>
+      <div class="footer-url">papier<span>box</span>.eu</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

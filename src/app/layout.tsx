@@ -162,12 +162,6 @@ const jsonLd = [
       "@type": "Country",
       name: "Germany",
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "12",
-      bestRating: "5",
-    },
   },
   {
     "@context": "https://schema.org",

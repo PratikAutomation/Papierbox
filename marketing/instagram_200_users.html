@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papierbox — 200 Users Milestone</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #FAFAFA;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .post {
+    width: 1080px;
+    height: 1080px;
+    background: #fff;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    background: #1a1c1c;
+    padding: 40px 50px 30px;
+    text-align: center;
+  }
+
+  .header .logo-text {
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .header .logo-text span { color: #22C55E; }
+
+  .header .milestone-badge {
+    display: inline-block;
+    margin-top: 14px;
+    background: #22C55E;
+    color: #fff;
+    font-weight: 900;
+    font-size: 14px;
+    padding: 6px 20px;
+    border-radius: 100px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* Hero Number */
+  .hero {
+    text-align: center;
+    padding: 30px 50px 10px;
+  }
+
+  .hero .big-number {
+    font-size: 140px;
+    font-weight: 900;
+    color: #1a1c1c;
+    line-height: 1;
+    letter-spacing: -5px;
+  }
+
+  .hero .big-number span { color: #22C55E; }
+
+  .hero .subtitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6B7280;
+    margin-top: 2px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Stats Grid */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    padding: 25px 50px;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 18px 10px;
+    position: relative;
+  }
+
+  .stat-card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 2px;
+    background: #E5E7EB;
+  }
+
+  .stat-number {
+    font-size: 42px;
+    font-weight: 900;
+    color: #1a1c1c;
+    line-height: 1.1;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Chart Section */
+  .chart-section {
+    padding: 10px 50px 5px;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+
+  .chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 120px;
+    padding-bottom: 25px;
+    position: relative;
+  }
+
+  .chart-bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .chart-bar {
+    width: 100%;
+    max-width: 50px;
+    background: #22C55E;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    min-height: 4px;
+    transition: all 0.3s;
+  }
+
+  .chart-bar.highlight {
+    background: #1a1c1c;
+  }
+
+  .chart-val {
+    font-size: 11px;
+    font-weight: 800;
+    color: #1a1c1c;
+    margin-bottom: 3px;
+  }
+
+  .chart-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #9CA3AF;
+    margin-top: 6px;
+  }
+
+  /* Cities Row */
+  .cities-section {
+    padding: 15px 50px 10px;
+  }
+
+  .cities-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .city-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F3F4F6;
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .city-chip .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22C55E;
+    flex-shrink: 0;
+  }
+
+  .city-chip .dot.small { background: #86EFAC; }
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    background: #1a1c1c;
+    padding: 22px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-stat .icon {
+    font-size: 18px;
+  }
+
+  .footer-stat .text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .footer-stat .text span { color: #22C55E; }
+
+  .footer-url {
+    font-size: 16px;
+    font-weight: 900;
+    color: #22C55E;
+    letter-spacing: -0.3px;
+  }
+
+  .divider {
+    height: 2px;
+    background: #F3F4F6;
+    margin: 0 50px;
+  }
+</style>
+</head>
+<body>
+
+<div class="post">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-text">papier<span>box</span>.eu</div>
+    <div class="milestone-badge">Milestone Reached</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="big-number">2<span>0</span>0<span>+</span></div>
+    <div class="subtitle">Unique Users &amp; Growing</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number">412</div>
+      <div class="stat-label">Page Views</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">1,066</div>
+      <div class="stat-label">Products Tracked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">5</div>
+      <div class="stat-label">Supermarkets</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Chart -->
+  <div class="chart-section">
+    <div class="chart-title">Daily Visitors — Last 7 Days</div>
+    <div class="chart">
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">33</div>
+        <div class="chart-bar" style="height: 90%;"></div>
+        <div class="chart-label">Mar 30</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">19</div>
+        <div class="chart-bar" style="height: 52%;"></div>
+        <div class="chart-label">Mar 31</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">6</div>
+        <div class="chart-bar" style="height: 17%;"></div>
+        <div class="chart-label">Apr 1</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">5</div>
+        <div class="chart-bar" style="height: 14%;"></div>
+        <div class="chart-label">Apr 2</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">24</div>
+        <div class="chart-bar" style="height: 66%;"></div>
+        <div class="chart-label">Apr 3</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">12</div>
+        <div class="chart-bar" style="height: 33%;"></div>
+        <div class="chart-label">Apr 4</div>
+      </div>
+      <div class="chart-bar-wrapper">
+        <div class="chart-val">55</div>
+        <div class="chart-bar highlight" style="height: 100%;"></div>
+        <div class="chart-label">Peak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cities -->
+  <div class="cities-section">
+    <div class="chart-title" style="text-align:center; margin-bottom: 14px;">Our Users Across Germany</div>
+    <div class="cities-row">
+      <div class="city-chip"><div class="dot"></div> Regensburg</div>
+      <div class="city-chip"><div class="dot"></div> Berlin</div>
+      <div class="city-chip"><div class="dot"></div> Hamburg</div>
+      <div class="city-chip"><div class="dot small"></div> Munich</div>
+      <div class="city-chip"><div class="dot small"></div> Nuremberg</div>
+      <div class="city-chip"><div class="dot small"></div> Frankfurt</div>
+      <div class="city-chip"><div class="dot small"></div> Düsseldorf</div>
+      <div class="city-chip"><div class="dot small"></div> Stuttgart</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      <div class="footer-stat">
+        <span class="icon">📱</span>
+        <div class="text"><span>86%</span> Mobile</div>
+      </div>
+      <div class="footer-stat">
+        <span class="icon">🔍</span>
+        <div class="text"><span>85%</span> Searched</div>
+      </div>
+      <div class="footer-stat">
+        <span class="icon">🇩🇪</span>
+        <div class="text"><span>8</span> Cities</div>
+      </div>
+    </div>
+    <div class="footer-url">papierbox.eu</div>
+  </div>
+
+</div>
+
+</body>
+</html>
