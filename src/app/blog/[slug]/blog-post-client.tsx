@@ -16,7 +16,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export default function BlogPostClient({ title, titleDe, description, descriptionDe, date, readingTime, slug, children }: Props) {
+export default function BlogPostClient({ title, titleDe, description, descriptionDe, date, readingTime, children }: Props) {
   const [lang, setLang] = useState<"en" | "de">("en");
 
   return (
