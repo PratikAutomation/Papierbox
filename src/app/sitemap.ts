@@ -1,5 +1,4 @@
 import { MetadataRoute } from "next";
-import { ALL_POSTS } from "@/lib/blog";
 
 const CITIES = [
   "hamburg","berlin","munich","cologne","frankfurt","stuttgart","duesseldorf",
@@ -9,6 +8,18 @@ const CITIES = [
 ];
 
 const STORES = ["lidl","aldi-sued","penny","kaufland","netto"];
+
+// Hardcoded to avoid importing React/JSX files at sitemap runtime
+const BLOG_POSTS = [
+  { slug: "cheapest-supermarkets-germany-expats-2026", date: "2026-04-10" },
+  { slug: "lidl-vs-aldi-which-is-cheaper", date: "2026-04-08" },
+  { slug: "how-to-save-money-groceries-germany", date: "2026-04-05" },
+  { slug: "german-supermarket-guide-beginners", date: "2026-04-02" },
+  { slug: "weekly-offers-germany-how-they-work", date: "2026-03-30" },
+  { slug: "aldi-sued-vs-aldi-nord-difference", date: "2026-03-27" },
+  { slug: "student-grocery-budget-germany", date: "2026-03-24" },
+  { slug: "kaufland-vs-penny-vs-netto", date: "2026-03-20" },
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://www.papierbox.eu";
@@ -41,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
   );
 
-  const blogPages: MetadataRoute.Sitemap = ALL_POSTS.map((post) => ({
+  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: new Date(post.date),
     changeFrequency: "monthly",
