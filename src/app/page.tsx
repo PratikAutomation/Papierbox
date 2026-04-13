@@ -215,6 +215,19 @@ function LoadingState({ steps, lang }: { steps: { en: string; de: string }[]; la
 
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-10">
+      {/* Loading header */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-3xl animate-spin">progress_activity</span>
+          <p className="font-headline font-black text-2xl text-on-surface">
+            {lang === "en" ? "Finding the best prices..." : "Beste Preise werden gesucht..."}
+          </p>
+        </div>
+        <p className="text-on-surface-variant font-bold text-sm">
+          {lang === "en" ? "Results are on their way — hang tight!" : "Ergebnisse kommen gleich — einen Moment!"}
+        </p>
+      </div>
+
       {/* Step progress bar */}
       <div className="flex items-start w-full max-w-md">
         {steps.map((step, i) => (
@@ -374,16 +387,16 @@ export default function Home() {
     setLoading(true);
     setShowSuggestions(false);
     setHasSearched(true);
+    // Scroll immediately so user sees the loading state
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
     try {
       const res = await fetch(
         `/api/search?product=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`
       );
       const data = await res.json();
       setResult(data.data);
-      // Auto-scroll to results on mobile
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
     } catch {
       setResult(null);
     } finally {
@@ -408,6 +421,10 @@ export default function Home() {
 
     setCompareLoading(true);
     setHasSearched(true);
+    // Scroll immediately so user sees the loading state
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
     try {
       const res = await fetch('/api/compare', {
         method: 'POST',
