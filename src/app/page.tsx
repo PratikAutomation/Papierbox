@@ -321,6 +321,129 @@ function TractionBar({ lang }: { lang: Lang }) {
 }
 
 // ============================================================
+// FOUNDING MEMBER BLOCK COMPONENT
+// ============================================================
+
+function FoundingMemberBlock({ city, lang }: { city: string; lang: Lang }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'waitlisted' | 'already'>('idle');
+  const [memberNumber, setMemberNumber] = useState<number | null>(null);
+  const [count, setCount] = useState<number>(0);
+
+  useEffect(() => {
+    fetch('/api/founding-members')
+      .then((r) => r.json())
+      .then((d) => setCount(d.count ?? 0))
+      .catch(() => {});
+  }, []);
+
+  async function handleSubmit() {
+    if (!email.includes('@')) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/founding-members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), city: city || 'hamburg' }),
+      });
+      const data = await res.json();
+      if (data.waitlisted) {
+        setStatus('waitlisted');
+      } else if (data.already_member) {
+        setMemberNumber(data.member_number);
+        setStatus('already');
+      } else if (data.success) {
+        setMemberNumber(data.member_number);
+        setCount(data.count);
+        setStatus('success');
+      }
+    } catch {
+      setStatus('idle');
+    }
+  }
+
+  if (status === 'success' || status === 'already') {
+    return (
+      <div className="mt-10 bg-[#1a1c1c] text-white rounded-[2.5rem] p-8 md:p-10 border-4 border-[#1a1c1c]">
+        <div className="flex items-center gap-4">
+          <span className="text-5xl">🎉</span>
+          <div>
+            <p className="font-headline font-black text-3xl text-primary">
+              {lang === 'en' ? `Founding Member #${memberNumber}` : `Gründungsmitglied #${memberNumber}`}
+            </p>
+            <p className="text-white/70 font-bold mt-1">
+              {status === 'already'
+                ? (lang === 'en' ? "You're already in. Welcome back!" : 'Du bist bereits dabei. Willkommen zurück!')
+                : (lang === 'en'
+                    ? "You're in. Weekly deals digest coming your way."
+                    : 'Du bist dabei. Der wöchentliche Deals-Digest kommt zu dir.')}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'waitlisted') {
+    return (
+      <div className="mt-10 bg-[#1a1c1c] text-white rounded-[2.5rem] p-8 md:p-10 border-4 border-[#1a1c1c]">
+        <p className="font-headline font-black text-2xl mb-2">
+          {lang === 'en' ? 'All 500 spots taken!' : 'Alle 500 Plätze vergeben!'}
+        </p>
+        <p className="text-white/70 font-bold">
+          {lang === 'en' ? "We've added you to the waitlist — you'll be first when spots open." : 'Wir haben dich auf die Warteliste gesetzt.'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-10 bg-[#1a1c1c] text-white rounded-[2.5rem] p-8 md:p-10 border-4 border-[#1a1c1c] relative overflow-hidden">
+      <div className="absolute top-4 right-6 text-5xl opacity-10 rotate-12 select-none">⚡</div>
+
+      <div className="inline-block bg-primary/20 text-primary text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4">
+        {lang === 'en' ? `${500 - count} of 500 spots left` : `${500 - count} von 500 Plätzen frei`}
+      </div>
+
+      <h3 className="font-headline font-black text-2xl md:text-3xl mb-2">
+        {lang === 'en' ? 'Become a Founding Member' : 'Werde Gründungsmitglied'}
+      </h3>
+      <p className="text-white/70 font-bold mb-1">
+        {lang === 'en'
+          ? 'Get the weekly deals digest — top 5 offers across all 5 stores, in your city, every week.'
+          : 'Erhalte den wöchentlichen Deals-Digest — die 5 besten Angebote aus allen 5 Läden in deiner Stadt.'}
+      </p>
+      <p className="text-white/40 text-sm font-bold mb-6">
+        {lang === 'en' ? `${count} people already in.` : `${count} Personen sind bereits dabei.`}
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={lang === 'en' ? 'your@email.com' : 'deine@email.de'}
+          className="flex-1 px-6 py-4 rounded-full bg-white/10 border-2 border-white/20 text-white font-bold placeholder:text-white/30 focus:border-primary focus:ring-0 outline-none transition-all"
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={status === 'loading'}
+          className="px-8 py-4 bg-primary text-white font-headline font-black rounded-full border-2 border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all neo-button whitespace-nowrap disabled:opacity-50"
+        >
+          {status === 'loading'
+            ? '...'
+            : (lang === 'en' ? 'CLAIM MY SPOT ⚡' : 'PLATZ SICHERN ⚡')}
+        </button>
+      </div>
+      <p className="text-white/30 text-xs font-medium mt-4">
+        {lang === 'en' ? 'Free forever. No spam. Unsubscribe anytime.' : 'Kostenlos. Kein Spam. Jederzeit abmelden.'}
+      </p>
+    </div>
+  );
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
@@ -831,50 +954,8 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Price Alert Signup — appears after results */}
-                <div className="mt-10 bg-[#1a1c1c] text-white rounded-[2.5rem] p-8 md:p-10 border-4 border-[#1a1c1c] relative overflow-hidden">
-                  <div className="absolute top-4 right-6 text-5xl opacity-10 rotate-12 select-none">🔔</div>
-                  {alertSubmitted ? (
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl">✅</span>
-                      <div>
-                        <p className="font-headline font-black text-2xl">{l.alertSent}</p>
-                        <p className="text-white/60 font-medium text-sm mt-1">{l.alertPrivacy}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="material-symbols-outlined text-[#22c55e] text-3xl">notifications_active</span>
-                        <h3 className="font-headline font-black text-2xl md:text-3xl">
-                          {l.alertTitle}
-                        </h3>
-                      </div>
-                      <p className="text-white/70 font-bold mb-6">
-                        {l.alertDesc} <span className="text-[#22c55e] font-black">{getCityLabel(city)}</span>
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <input
-                          type="email"
-                          value={alertEmail}
-                          onChange={(e) => setAlertEmail(e.target.value)}
-                          placeholder={l.alertPlaceholder}
-                          className="flex-1 px-6 py-4 rounded-full bg-white/10 border-2 border-white/20 text-white font-bold placeholder:text-white/30 focus:border-[#22c55e] focus:ring-0 outline-none transition-all"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSubscribe();
-                          }}
-                        />
-                        <button
-                          onClick={handleSubscribe}
-                          className="px-8 py-4 bg-[#22c55e] text-white font-headline font-black rounded-full border-2 border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all neo-button whitespace-nowrap"
-                        >
-                          {l.alertButton} 🔔
-                        </button>
-                      </div>
-                      <p className="text-white/30 text-xs font-medium mt-4">{l.alertPrivacy}</p>
-                    </>
-                  )}
-                </div>
+                {/* Founding Members Block */}
+                <FoundingMemberBlock city={city} lang={lang} />
               </>
             )}
 
